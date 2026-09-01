@@ -151,6 +151,58 @@
 /// directly, including with an `@ref` sitting inline right next to the
 /// stripped copy).
 ///
+/// A `figure` or a labelled block `math.equation` that still has its
+/// original label at the point this runs gets one more thing done to
+/// it before that label is dropped: `query(lbl)` finds the true,
+/// already-shown manuscript original (the copy being built right now
+/// doesn't exist yet, so this can't resolve to itself), and its real,
+/// resolved number is pinned onto the reconstructed copy's
+/// `numbering:` field as a literal value (`(..) => real-number`). A
+/// local `numbering:` always wins over whatever `set figure(numbering:
+/// ...)`/`set math.equation(numbering: ...)` is active where the copy
+/// is re-emitted — normally the letter's own independent "R" sequence
+/// for a figure (`with-letter-numbering`, `letter.typ`) — so a figure
+/// or equation the letter quotes shows the *same* number it has in the
+/// manuscript ("Figure 2"/"Equation 3" in both places) instead of a
+/// letter-local one ("Figure 2" in the manuscript, "Figure R1" in the
+/// letter) that gave no hint the two were the same element. The two
+/// element types need different fields to compute that real number,
+/// which is the only reason they're not handled by one shared branch:
+/// a `figure` synthesizes its own `.counter` once shown (scoped to its
+/// `kind`, so it already reads the right one whatever that kind is);
+/// `math.equation` does not synthesize one, so `counter(math.equation)`
+/// — the one, ungrouped counter every equation shares (verified
+/// directly, no `kind`-style filtering exists for equations the way it
+/// does for figures) — has to be read explicitly instead. Skipped,
+/// falling through to whatever numbering already applies, whenever
+/// there's nothing to pin: no label, the label doesn't resolve
+/// anywhere (a figure/equation the *letter* itself adds, never in the
+/// manuscript at all), or the original's own `numbering` is `none` (a
+/// deleted figure shown in the tracked manuscript with
+/// `del-numbering: "none"` freezing its number, §7.3 — `numbering(none,
+/// ..)` is a hard Typst error, not a case to recover from after the
+/// fact; a deleted figure/equation also has no label to resolve in the
+/// *clean* manuscript at all, since `del()` emits nothing there, so
+/// this mostly matters for `pinpoint(mode: "tracked")` excerpts). An
+/// *inline* equation is covered by the same branch as a block one —
+/// `math.equation`'s `.numbering` field and the shared counter work
+/// identically either way — but an inline equation is rarely labelled
+/// or numbered in practice, so this is mostly untested territory.
+/// `heading` is not covered — no request to number a quoted heading
+/// like a manuscript section number yet, and headings don't carry a
+/// `kind`-scoped counter the way figures do either.
+///
+/// Doesn't change how many counter slots a re-emitted figure consumes
+/// — it still advances whichever kind-scoped counter is active where
+/// it's shown (a real `figure` element always does, however its number
+/// is displayed), same as before this pinning existed. A letter's own,
+/// genuinely new figure appearing after several quoted ones therefore
+/// still gets whatever "R" number that position implies, not a clean
+/// "R1" — already true before this change (an excerpt has always
+/// consumed a slot in the letter's counter, only its *displayed*
+/// number is new), so left as is rather than introducing a separate
+/// counter namespace (`kind:`) to fix a property nobody has asked for.
+///
 /// Reconstructs an element via its own `.func()(..fields)` — works
 /// uniformly across element types (figure, heading, math.equation, all
 /// verified) *except* that a `sequence`'s `children` field is one
@@ -188,6 +240,24 @@
       })
     }
     let ctor = node.func()
+    if ctor == figure or ctor == math.equation {
+      let lbl = f.at("label", default: none)
+      if lbl != none {
+        let hits = query(lbl)
+        if hits.len() > 0 {
+          let orig = hits.first()
+          if orig.numbering != none {
+            let cval = if ctor == figure {
+              orig.counter.at(orig.location())
+            } else {
+              counter(math.equation).at(orig.location())
+            }
+            let real-number = numbering(orig.numbering, ..cval)
+            new-f.insert("numbering", (..) => real-number)
+          }
+        }
+      }
+    }
     if "body" in new-f {
       let b = new-f.remove("body")
       ctor(b, ..new-f)

@@ -2,6 +2,13 @@
 #import "@preview/unequivocal-ams:0.1.2": theorem, proof
 #import "@preview/lilaq:0.6.0" as lq
 
+// Numbered display equations — unnumbered by default under this
+// template, but a numbered model equation is common enough in a real
+// paper to be worth demonstrating, and it's what lets the equation
+// pinpoint(<r1-3>, excerpt: true) quotes below show a real number to
+// match against.
+#set math.equation(numbering: "(1)")
+
 // The two co-authors, so they can leave their own notes below alongside
 // the reviewers' — Ivana with an explicit color, Tupper with just a
 // display name (still gets an automatic, distinct color).

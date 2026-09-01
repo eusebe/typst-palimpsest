@@ -1,148 +1,42 @@
-// Feasibility experiment, NOT a proposal for src/ yet — see CLAUDE.md.
+// Regression test for the manuscript-matched figure/table numbering in
+// pinpoint(excerpt: true) — src/utils.typ::strip-labels. Grew out of a
+// feasibility experiment (see CLAUDE.md for the full history — how
+// .counter/.numbering fields on an already-shown figure were found,
+// and why with-letter-numbering's counter turned out to be a single
+// sequence shared across the whole bundle, not separate per
+// #document() as an earlier CLAUDE.md note had wrongly claimed); once
+// implemented for real in src/, this file was rewritten from a
+// hand-rolled prototype (imported nothing from src/ but lib.typ) into
+// a plain regression test of the real public API.
 //
-// Question from the user: pinpoint(excerpt: true) currently re-emits a
-// quoted figure/table under the letter's own independent "R" numbering
-// (with-letter-numbering, src/letter.typ) — "Figure 1" in the manuscript
-// becomes "Figure R1" when quoted in the letter. Is it feasible to make
-// the quoted copy instead show the SAME number it has in the manuscript?
-//
-// Everything below is written directly in this test file. Nothing in
-// src/ is touched. Two internal helpers are imported read-only from
-// src/ (with-letter-numbering, collect-labels) to avoid reinventing
-// what already exists; a NEW function, inherit-numbering-strip, is
-// defined here as a variant of src/utils.typ's strip-labels.
+// Expected, verified by reading the compiled PDFs directly (pdftotext):
+// - <r1-1>'s added figure is "Figure 2" in the manuscript, and "Figure
+//   2" (not "Figure R2") when quoted in the letter.
+// - <r1-2>'s added table is "Table 1" in the manuscript, and "Table 1"
+//   (not "Table R1") when quoted in the letter.
+// - <r1-5>'s added equation is "(2)" in the manuscript, and "(2)" when
+//   quoted in the letter — the extension to a bare math.equation, added
+//   on the user's explicit request after the figure/table version was
+//   already implemented (equations don't synthesize a `.counter` field
+//   the way figure does, so they need `counter(math.equation).at(...)`
+//   explicitly instead — see strip-labels's docstring).
+// - The letter's own figure, added before either excerpt, keeps its
+//   independent "Figure R1" — nothing to match, no manuscript label.
+// - <r1-4>, fully deleted with a summary, never reaches the numbering
+//   logic at all — pinpoint's summary path takes over first, same as
+//   without this feature.
+// - <r1-3> (touched, cites @fig-baseline in prose without owning a
+//   figure) is unaffected — ordinary cross-document `@ref` resolution,
+//   not this mechanism.
 
 #import "../lib.typ": *
 #import "../src/letter.typ": with-letter-numbering
-#import "../src/utils.typ": collect-labels
-
-// Step 0 (done once, then removed from this file): does a queried
-// figure really carry usable .counter/.numbering fields, as
-// mark-figure-body's docstring in src/utils.typ claims for a figure
-// that has actually been shown? Confirmed directly with a throwaway
-// #document() and #context probe — f.fields() includes both, and
-// numbering(f.numbering, ..f.counter.at(f.location())) resolves to the
-// figure's real, displayed number. Also surfaced a real correction to
-// this file's own CLAUDE.md §2 along the way: see the write-up — figure
-// counters are NOT separate per #document() by default (a bare
-// counter(figure...) is one shared sequence across the whole bundle);
-// with-letter-numbering's reset (below) is what makes the letter's own
-// figures start at R1 instead of continuing the manuscript's count, not
-// a pre-existing per-document isolation.
-
-// === The new helper: like strip-labels, but a figure whose ORIGINAL
-// label still resolves (via query, before this reconstruction exists)
-// gets its numbering pinned to that original's real, resolved number —
-// instead of falling through to whatever `set figure(numbering: ...)`
-// is active where the excerpt is re-emitted (the letter's own "R"
-// sequence). A figure with no label, or whose label doesn't resolve
-// anywhere, is left completely alone: same fallback strip-labels itself
-// already has for "no label anywhere in this subtree" (skip
-// reconstruction entirely).
-
-#let inherit-numbering-strip(node) = {
-  let t = type(node)
-  if t == content {
-    if node.func() == metadata or collect-labels(node).len() == 0 {
-      return node
-    }
-    let f = node.fields()
-    let new-f = (:)
-    for (k, v) in f {
-      if k == "label" { continue }
-      let t2 = type(v)
-      new-f.insert(k, if t2 == content {
-        inherit-numbering-strip(v)
-      } else if t2 == array {
-        v.map(x => if type(x) == content { inherit-numbering-strip(x) } else { x })
-      } else {
-        v
-      })
-    }
-    let ctor = node.func()
-    if ctor == figure and f.at("label", default: none) != none {
-      let lbl = f.at("label")
-      let hits = query(lbl)
-      // hits includes THIS node's own future re-emission? No — query()
-      // sees only what has *already been laid out*, and this
-      // reconstruction doesn't exist yet at the point this runs. Only
-      // the true manuscript original(s) can show up here.
-      if hits.len() > 0 {
-        let orig = hits.first()
-        // A deleted figure's original (del-numbering: "none") has
-        // numbering: none — numbering(none, ..) errors, so skip pinning
-        // rather than crash; falls back to the letter's own numbering,
-        // same as an unresolvable label would.
-        if orig.numbering != none {
-          let real-number = numbering(orig.numbering, ..orig.counter.at(orig.location()))
-          new-f.insert("numbering", (..) => real-number)
-        }
-      }
-    }
-    if "body" in new-f {
-      let b = new-f.remove("body")
-      ctor(b, ..new-f)
-    } else if "children" in new-f {
-      let c = new-f.remove("children")
-      if repr(ctor) == "sequence" { ctor(c, ..new-f) } else { ctor(..c, ..new-f) }
-    } else {
-      ctor(..new-f)
-    }
-  } else if t == array {
-    node.map(inherit-numbering-strip)
-  } else {
-    node
-  }
-}
-
-// Content actually shown for an excerpt, "clean" style (final accepted
-// text only — what pinpoint(excerpt: true) shows by default). Real
-// pinpoint() gets this by re-rendering raw-body as-is and letting
-// add()/del()/rep()'s OWN context-wrapped logic decide what to show —
-// which also, incidentally, is where the real in-excerpt/strip-labels
-// mechanism lives (marks.typ), reachable only from inside those
-// functions because their rendering is wrapped in `context` and
-// therefore structurally opaque from the outside (see pinpoint.typ's
-// docstring for has-conflicting-label). This prototype, working ONLY
-// from outside src/, can't reach into that context — so instead of
-// re-rendering raw-body, it reconstructs the same "clean" content
-// directly from `v.marks` (add()/del()/rep()'s stored, pre-context
-// `old`/`new` — already plain, inspectable content, per the same
-// mechanism `passage-is-textual` already relies on). This is why a
-// passage's content has to be EITHER prose OR marks for this prototype
-// to reconstruct it correctly, never a mix of the two in one passage —
-// a real fix belongs inside add()/del()/rep() themselves, which already
-// do the analogous thing for label-stripping via `in-excerpt` (see the
-// write-up).
-#let content-for-excerpt(v) = {
-  if v.marks.len() > 0 {
-    v.marks.map(m => if m.kind == "del" { none } else { m.new }).join()
-  } else {
-    v.raw-body
-  }
-}
-
-// Reimplements just enough of pinpoint(excerpt: true)'s page-only and
-// content-reemission logic to demonstrate the substitution end to end —
-// NOT a drop-in replacement (no mode:/quotes:/show-page:/on-empty:, no
-// has-conflicting-label backstop — see the write-up for what real
-// integration would need).
-#let matched-excerpt(anchor) = context {
-  let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
-  hits.map(h => {
-    let v = h.value
-    if v.summary != none {
-      [Removed: #v.summary.]
-    } else {
-      [*p. #h.location().page()* --- #inherit-numbering-strip(content-for-excerpt(v))]
-    }
-  }).join(parbreak())
-}
 
 #document("manuscript.pdf")[
   #set page(width: 14cm, height: auto, margin: 1.5cm)
   #set text(size: 10.5pt)
   #set heading(numbering: "1.")
+  #set math.equation(numbering: "(1)")
 
   = Results
 
@@ -170,6 +64,16 @@
 
   #figure(rect(width: 3cm, height: 2cm, fill: luma(180)), caption: [A third, unrelated figure.]) <fig-third>
 
+  A first equation, present from the initial submission.
+
+  $ E = m c^2 $ <eq-first>
+
+  #passage(<r1-5>)[
+    #add[
+      $ F = m a $ <eq-added>
+    ]
+  ]
+
   #deleted(<r1-4>, summary: [an outdated diagnostic figure])[
     #figure(rect(width: 3cm, height: 2cm, fill: luma(160)), caption: [An outdated diagnostic figure, now removed.]) <fig-removed>
   ]
@@ -187,55 +91,52 @@
   #set text(size: 10.5pt)
 
   #with-letter-numbering[
-    // A figure the LETTER adds on its own, unrelated to the manuscript —
-    // establishes that the letter's own "R" counter is already at R1
-    // before either excerpt below, so a naive excerpt of <r1-1> would
-    // show "Figure R2", not "Figure R1" — makes the mismatch obvious.
+    // Added first, before either excerpt below, specifically so its "R"
+    // number would visibly collide with an excerpt's position if
+    // excerpts still consumed the letter's own sequence for display —
+    // confirms they don't (this one stays "Figure R1" regardless of
+    // what comes after it).
     #figure(rect(width: 2cm, height: 1cm, fill: luma(150)), caption: [A figure the letter adds for its own purposes.]) <fig-letter-own>
 
     #reviewer(1)[
       #exchange(<r1-1>)[Please add a subgroup analysis.][
-        Done — see below.
-
-        *Today's pinpoint(excerpt: true):*
+        Done — see below, still captioned "Figure 2", matching the
+        manuscript, not the letter's own "R" sequence:
 
         #pinpoint(<r1-1>, excerpt: true)
-
-        *Prototype, manuscript-matched numbering:*
-
-        #matched-excerpt(<r1-1>)
       ]
 
       #exchange(<r1-2>)[Please also report the underlying counts as a table.][
-        Added.
-
-        *Today's pinpoint(excerpt: true):*
+        Added, still captioned "Table 1", matching the manuscript:
 
         #pinpoint(<r1-2>, excerpt: true)
+      ]
 
-        *Prototype, manuscript-matched numbering:*
+      #exchange(<r1-5>)[Please add Newton's second law for comparison.][
+        Added, still numbered "(2)", matching the manuscript, not a
+        letter-local sequence (equations have no "R"-prefixed
+        letter-numbering the way figures/tables do via
+        with-letter-numbering — nothing to fall back to here besides the
+        shared, ungrouped math.equation counter, same as before this
+        feature existed):
 
-        #matched-excerpt(<r1-2>)
+        #pinpoint(<r1-5>, excerpt: true)
       ]
 
       #exchange(<r1-4>)[The diagnostic figure looks redundant now.][
-        Agreed, removed — a deleted figure's label doesn't resolve
-        anywhere in the CLEAN manuscript at all (del() emits nothing in
-        clean mode), so there is no "real number" to match here; the
-        summary path (v.summary != none, same as real pinpoint) is what
-        actually renders, never reaching inherit-numbering-strip:
+        Agreed, removed — no figure to number here, `summary:` takes
+        over as before:
 
-        #matched-excerpt(<r1-4>)
+        #pinpoint(<r1-4>, excerpt: true)
       ]
 
       #exchange(<r1-3>)[A minor point about Figure 1.][
         Noted, no change needed — Figure 1 is unaffected. Quoting the
-        passage that discusses it again, to test a passage whose OWN
-        content has no figure, only a reference to one:
+        passage that discusses it again (it owns no figure of its own,
+        only a reference to one — ordinary `@ref` resolution, unrelated
+        to this feature):
 
-        *Prototype, manuscript-matched numbering:*
-
-        #matched-excerpt(<r1-3>)
+        #pinpoint(<r1-3>, excerpt: true)
       ]
     ]
   ]

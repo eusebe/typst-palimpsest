@@ -505,7 +505,21 @@ A real project's three-file shape (`main.typ`/`manuscript.typ`/`responses.typ`, 
 
 == Letter numbering
 
-The table above, "for the reviewer's convenience only," is captioned "Table R1" --- the letter's own figures and tables are numbered independently from the manuscript's, prefixed `R`, so they can never be confused with a manuscript one. This includes any figure/table a letter shows via `pinpoint(excerpt: true)`.
+A figure or table the letter adds *on its own* --- "for the reviewer's convenience only," never in the manuscript, like the table above --- is numbered independently from the manuscript's, prefixed `R`, so it can never be confused with a manuscript one.
+
+A figure or table `pinpoint(excerpt: true)` re-emits *from* the manuscript is different: it keeps the manuscript's own real number, not an `R` one --- "Figure 1" reads "Figure 1" in the letter too, not "Figure R1":
+
+#code-of("manual-snippets/letter-numbering.typ")
+
+Manuscript:
+
+#shot("manual-snippets/letter-numbering/manuscript-clean.png")
+
+Response:
+
+#shot("manual-snippets/letter-numbering/response-clean.png")
+
+The letter's own figure above is captioned "Figure R2," not "Figure R1" --- the excerpt before it still occupies the first slot of the letter's own counter, even though what it *displays* is the manuscript's number rather than that slot's. Already true before either was ever matched to the manuscript (an excerpt has always advanced the letter's counter); the only thing that changed is what a matched excerpt shows on the page.
 
 = Diagnostics and strict mode
 

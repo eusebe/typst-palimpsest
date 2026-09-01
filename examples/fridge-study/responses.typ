@@ -36,7 +36,9 @@ corresponding change cited by page number in the manuscript.
     not appropriate here.
   ][
     Done; the model is now written on the logit scale, with an added
-    household-level random effect. #pinpoint(<r1-3>)
+    household-level random effect, numbered (1) in the manuscript:
+
+    #pinpoint(<r1-3>, excerpt: true)
   ]
 
   #exchange(<r1-4>)[
@@ -240,6 +242,13 @@ change — consistent with the general observation that peer review of
 a self-monitoring behavior tends to attract more critical attention
 than the behavior itself #cite(<peek2015>, form: "prose").
 
+// Captioned "Table R3", not "Table R1", even though this is the only
+// table the letter adds on its own — the two tables quoted above
+// (<r1-5>, <r2-6>, both pinpoint(excerpt: true)) now show the
+// manuscript's own real numbers ("Table 1"/"Table 2") rather than "R"
+// ones, but they still occupy the first two slots of the letter's own
+// counter; only the *displayed* number changed, not how many slots a
+// quoted table consumes. See docs/manual-v2.typ, "Letter numbering".
 #figure(
   table(
     columns: 3,

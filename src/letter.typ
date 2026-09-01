@@ -14,7 +14,15 @@
 /// Wraps `body` with the letter's own figure/table numbering (§7.2):
 /// "Figure R1", restarting from the manuscript's own numbering, so a
 /// figure the letter includes "for the reviewer only" is never
-/// confusable with a manuscript figure. Must structurally *wrap* `body`
+/// confusable with a manuscript figure. Only actually reaches a figure
+/// that has no manuscript original to match — one `pinpoint(excerpt:
+/// true)` re-emits from the manuscript instead shows that original's
+/// *own* real number, pinned by `strip-labels` (`utils.typ`) before
+/// this `set` rule ever gets a say (a local `numbering:` on the figure
+/// itself always wins) — so "R1", "R2", ... now only ever means "a
+/// figure genuinely native to this letter," never "a citation of
+/// manuscript figure N," a distinction the plain "R" sequence didn't
+/// carry on its own before this pinning existed. Must structurally *wrap* `body`
 /// — not run as a sibling statement before it — because `set` rules
 /// scope to the content they contain, not to whatever a caller happens
 /// to place next to their result.
