@@ -219,9 +219,15 @@ senders who wrote "merci" or used no sign-off.
       [Full-text reply], [29%], [38%],
       [One-word reply], [11%], [14%],
       [Emoji-only reply], [6%], [9%],
-      ..if mode() == "clean" { () } else {
-        (add[Reacted only (no reply)], add[--], add[7%])
-      },
+      // An ADDED row stays in both compiles (add[...] alone handles the
+      // clean-vs-tracked styling) — no `if mode() == "clean" { () }
+      // else {...}` gating, that pattern is for a row genuinely
+      // absent from the submitted manuscript (a DELETED row, see
+      // tests/marks-figures.typ), not an accepted addition. An earlier
+      // version of this table wrongly hid this row from manuscript.pdf
+      // entirely (see CLAUDE.md) — a real defect, since the row is
+      // actually part of what's submitted, added in response to R2-6.
+      add[Reacted only (no reply)], add[--], add[7%],
     ),
     caption: [Reply type breakdown, by 24 and 48 hours after the final message.],
   ) <tab-replytype>

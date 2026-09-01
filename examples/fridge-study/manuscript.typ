@@ -254,9 +254,15 @@ after-hours snacking.
       [Mystery Tupperware], [24%], [22%],
       [Something green], [9%], [7%],
       [Actually edible food], [6%], [13%],
-      ..if mode() == "clean" { () } else {
-        (add[Unidentified frozen object], add[--], add[3%])
-      },
+      // An ADDED row stays in both compiles (add[...] alone handles the
+      // clean-vs-tracked styling) — no `if mode() == "clean" { () }
+      // else {...}` gating, that pattern is for a row genuinely
+      // absent from the submitted manuscript (a DELETED row, see
+      // tests/marks-figures.typ), not an accepted addition. An earlier
+      // version of this table wrongly hid this row from manuscript.pdf
+      // entirely (see CLAUDE.md) — a real defect, since the row is
+      // actually part of what's submitted, added in response to R2-6.
+      add[Unidentified frozen object], add[--], add[3%],
     ),
     caption: [Fridge discovery categories, day 1 versus day 30 of observation.],
   ) <tab-discovery>
