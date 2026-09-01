@@ -806,6 +806,20 @@ Suite immédiate de §6duoquadragies : demandé d'inscrire le workaround (figure
 
 **Vérifié** : `bash examples/emoji-email/compile.sh`, `bash docs/manual-snippets/compile.sh`, `bash compile.sh` (régression complète), tous sans erreur. `manuscript.pdf` (propre) ne contient aucune trace de la table de latence (`pdftotext` — absente) ; `manuscript-tracked.pdf` la montre avec sa légende manuelle barrée/colorée, et confirme qu'aucune fuite/décalage de numérotation ne se produit autour d'elle (Fig. 1/Fig. 2 inchangés, TABLE I/TABLE II inchangés entre propre et suivi). `response.pdf` : l'échange R2-7, la note technique de Marcus, et `xcomment(<r2-7>)` (« reviewer 2, comment 7, p. 5 ») tous vérifiés par `pdftotext`.
 
+## 6quaterquadragies. Le contre-exemple positif : une vraie figure supprimée dans `fridge-study`, sans workaround
+
+Demandé par l'utilisateur : montrer la suppression d'une figure dans « l'autre exemple ieee ». `fridge-study` utilise en réalité `unequivocal-ams` (AMS, pas IEEE — `emoji-email` est le seul des deux sur `charged-ieee`), mais c'est bien le second des deux exemples visés, traité comme tel.
+
+**Vérifié avant d'écrire quoi que ce soit** : contrairement à `charged-ieee`, la numérotation de figure d'`unequivocal-ams` est la numérotation Typst *native* (pas de show-rule maison) — `del-numbering: "none"` la neutralise donc proprement, sans fuite ni décalage. Testé isolément avec un vrai graphique `lilaq` (pas juste un `rect`) supprimé entre deux figures numérotées : « Figure 1 »/« Figure 2 » identiques des deux côtés, la figure supprimée affiche « Figure. » sans numéro, aucun crash. **Aucun workaround nécessaire ici** — le cas inverse exact de `charged-ieee`/§6trequadragies.
+
+**Ajouté** : nouvelle ancre `<r2-7>` dans `examples/fridge-study/manuscript.typ`, juste après `<fig-forest>` (avant le premier `suppressed(<r2-3>, ...)`) — un vrai graphique `lilaq` (taux de découverte par jour de semaine), supprimé via `deleted()` **sans aucune adaptation**, un vrai `figure(lq.diagram(...))` normal. Commentaire source expliquant le contraste avec `emoji-email`/`charged-ieee`, renvoyant vers `docs/manual.typ`. `responses.typ` : exchange `<r2-7>` correspondant, `<tab-summary>` recompté (relecteur 2 : 6→7).
+
+**Rendu visuel confirmé** (capture) : le graphique réel est traversé d'une vraie croix diagonale (`cross()`, §6sexvicies) et sa légende barrée/colorée — bien plus satisfaisant visuellement que le pseudo-figure fait main de `emoji-email`, précisément parce qu'ici `mark-figure-body` peut s'appliquer sans encombre à un vrai `figure()`.
+
+**Un vrai piège revérifié, pas retombé dedans grâce à §6quatervicies déjà documenté** : `pinpoint(<r2-7>, excerpt: true)` sur ce passage plante toujours (`strip-labels` sur un `lq.diagram()` rencontre les labels internes d'`elembic`, « cannot be constructed manually » — reproduit isolément avant de toucher aux vrais fichiers, confirmant que cette limitation connue est toujours présente, non corrigée). `responses.typ` utilise donc `pinpoint(<r2-7>)` en mode page seule, comme `<r2-2>` un peu plus haut dans le même fichier pour la même raison.
+
+**Vérifié** : `bash examples/fridge-study/compile.sh`, `bash compile.sh` (régression complète), aucune erreur. `manuscript.pdf` (propre) : aucune trace du graphique (`pdftotext`, absent). `manuscript-tracked.pdf` : présent, croisé, « Figure 1 »/« Figure 2 » inchangés autour de lui. `response.pdf` : échange R2-7 correct, « Figure 1 » (référence en dur dans le texte du relecteur, vérifié contre le vrai numéro de `@fig-dose-response` avant d'écrire — même précaution que l'erreur corrigée en §6trequadragies).
+
 ## 7. Points de vigilance identifiés en lisant la spec
 
 - **§7.3 — pas de `hide()`** pour `#del` en mode propre : le contenu ne doit tout simplement pas être émis. En mode suivi, il est émis mais avec compteurs neutralisés (`del-numbering: "none"` par défaut) — à vérifier concrètement sur figures/équations numérotées en cas de test dédié.

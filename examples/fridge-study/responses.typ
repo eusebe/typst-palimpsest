@@ -185,6 +185,14 @@ corresponding change cited by page number in the manuscript.
     #pinpoint(<r2-6>, excerpt: true)
   ]
 
+  #exchange(<r2-7>)[
+    The day-of-week discovery-rate chart doesn't add much beyond
+    Figure 1's opening-frequency trend and could be cut for space.
+  ][
+    Agreed and removed from the submitted manuscript; still visible in
+    the tracked version for reference. #pinpoint(<r2-7>)
+  ]
+
 ]
 
 #pagebreak()
@@ -254,7 +262,7 @@ than the behavior itself #cite(<peek2015>, form: "prose").
     columns: 3,
     table.header[Reviewer][Comments][Led to a change],
     [Reviewer 1], [10], [8],
-    [Reviewer 2], [6], [6],
+    [Reviewer 2], [7], [7],
   ),
   caption: [Summary of comments and resulting changes, for the reviewers' convenience.],
 ) <tab-summary>

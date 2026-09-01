@@ -234,6 +234,36 @@ after-hours snacking.
 
 #lorem(90)
 
+// A genuinely DELETED figure, kept as a real numbered figure() --
+// contrast with examples/emoji-email, where the same situation under
+// @preview/charged-ieee needs the manual pseudo-figure workaround
+// (docs/manual.typ, "Deleting a numbered figure under a template with
+// its own numbering"). unequivocal-ams's own figure numbering is
+// native Typst numbering, not a custom show rule, so
+// del-numbering: "none" (the default) already neutralizes it cleanly
+// -- no leak, no shift to @fig-dose-response's own number below.
+#deleted(<r2-7>, summary: [the day-of-week discovery-rate chart, redundant with @fig-dose-response])[
+  #figure(
+    lq.diagram(
+      width: 6.5cm,
+      height: 3.6cm,
+      xlabel: [Day of week],
+      ylabel: [Discovery rate (%)],
+      xaxis: (ticks: ((1, "Mon"), (2, "Tue"), (3, "Wed"), (4, "Thu"), (5, "Fri"), (6, "Sat"), (7, "Sun"))),
+      yaxis: (lim: (0, 60)),
+      lq.plot(
+        (1, 2, 3, 4, 5, 6, 7),
+        (38, 40, 37, 41, 39, 44, 42),
+        stroke: rgb("#7a9e7e"),
+        mark: "o",
+      ),
+    ),
+    caption: [Discovery rate by day of week.],
+  )
+]
+
+#lorem(60)
+
 #suppressed(
   <r2-3>,
   [Sub-analysis removed: the sock-drawer control group, including its
