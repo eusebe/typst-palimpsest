@@ -181,6 +181,18 @@ corresponding change cited by page number in the manuscript.
     #pinpoint(<r2-6>, excerpt: true)
   ]
 
+  #exchange(<r2-7>)[
+    The reply-latency table duplicates what Figure 1 already shows and
+    could be cut for space.
+  ][
+    Agreed that it's redundant with the figure; removed from the
+    submitted manuscript. We've kept it visible in the tracked version
+    below, for your convenience in checking it against the figure,
+    rather than collapsing it to a bare note.
+
+    #pinpoint(<r2-7>, excerpt: true, mode: "tracked")
+  ]
+
 ]
 
 #pagebreak()
@@ -201,10 +213,9 @@ corresponding change cited by page number in the manuscript.
 
 == Author notes
 
-The changes above address every reviewer and editor comment. Two
-further, smaller changes were made on our own initiative during
-revision, noted here for transparency even though neither answers a
-specific reviewer comment.
+The changes above address every reviewer and editor comment. Three
+further, smaller notes are recorded here for transparency, even though
+none of them answers a specific reviewer comment.
 
 #author("marcus")[
 
@@ -214,6 +225,22 @@ specific reviewer comment.
     added a note confirming adequate overlap.
 
     #pinpoint(<marcus-1>, excerpt: true)
+  ]
+
+  #note(<marcus-2>)[
+    A technical note for anyone reusing this project with a different
+    journal template: the reply-latency table removed per
+    #xcomment(<r2-7>) is kept visible in the tracked manuscript rather
+    than collapsed to a note, unlike the two sub-analyses above. That's
+    only safe because it's built as a plain block with a hand-written
+    caption instead of a real `figure()` --- `charged-ieee`
+    reimplements figure numbering with its own show rule, which leaks
+    a visible number onto a genuinely deleted figure and shifts every
+    figure number after it. `suppressed()` sidesteps this by never
+    building a real figure at all, at the cost of hiding the original
+    content; this table needed to stay legible instead. See
+    `docs/manual.typ`, "Deleting a numbered figure under a template
+    with its own numbering", for the general pattern.
   ]
 
 ]
@@ -242,7 +269,7 @@ latency #cite(<latency2018>, form: "prose").
     columns: 3,
     table.header[Reviewer][Comments][Led to a change],
     [Reviewer 1], [10], [8],
-    [Reviewer 2], [6], [6],
+    [Reviewer 2], [7], [7],
   ),
   caption: [Summary of comments and resulting changes, for the reviewers' convenience.],
 ) <tab-summary>

@@ -265,6 +265,24 @@ Still colored and tagged like any other passage --- just nothing struck or under
 
 `note` and `summary:` are separate parameters on purpose. `note` has to read on its own, cold, in the middle of the manuscript --- "Equation removed: ...". `summary:` is inserted into a sentence the *letter* will already have written --- "Removed: `‹summary›`" --- so it should be a bare phrase, not repeat "removed" itself. `summary:` defaults to `note` when omitted, since most of the time the two don't need to differ; the second call above gives them separately.
 
+== Deleting a numbered figure under a template with its own numbering
+
+`suppress`/`suppressed`, above, exist because of a real limitation: some templates (`charged-ieee`, `unequivocal-ams`) reimplement figure numbering with their own show rule, which doesn't cooperate with `del-numbering: "none"` --- deleting a real `figure(...)` under one of these can leak a visible number onto the deleted figure, and even shift the numbers of every figure that follows it. `suppressed` sidesteps the whole problem by never emitting a real `figure()` at all --- but it also never shows the original content, only a note.
+
+When the deleted figure is short and worth keeping visible --- not replaced by a note --- skip `figure()` entirely instead: a plain block with the image and a hand-written caption never reaches the template's numbering machinery, because `del`'s automatic styling only special-cases a genuine `figure`/`table`/`math.equation`.
+
+#code-of("manual-snippets/deleted-figure-workaround.typ")
+
+Clean:
+
+#shot("manual-snippets/deleted-figure-workaround/result-clean.png")
+
+Tracked:
+
+#shot("manual-snippets/deleted-figure-workaround/result-tracked.png")
+
+Figures 1 and 2 keep their real numbers on both sides --- no leak, no shift. The trade-off: `del`'s automatic styling (desaturated color, strike) only decorates *text*, so the hand-written caption is struck and colored like any other deleted text, but the image itself isn't crossed out the way a genuinely deleted `figure()` is under a template with native numbering (previous chapter). Worth it whenever keeping the real content visible matters more than the missing cross mark; `examples/emoji-email/` uses this for exactly that reason, with an author note explaining why.
+
 = Anchors: reviewer, editor, author
 
 An anchor is parsed into one of three kinds, purely from its shape: `<r1-2>` is reviewer 1, comment 2; `<e1>` is editor comment 1; anything else --- `<bob-3>`, `<bob>` --- is a co-author id, "bob", optionally followed by a change number. Each kind gets its own color automatically, without any setup:
