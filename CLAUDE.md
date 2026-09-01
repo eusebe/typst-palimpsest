@@ -751,6 +751,12 @@ Demandé par l'utilisateur : évaluer si `palimpsest` est prêt pour Typst Unive
 
 **Vérifié** : `bash docs/manual-snippets/compile.sh` et `bash compile.sh` (régression complète du dépôt) rejoués après le renommage, aucune erreur — seuls les avertissements déjà connus (bundle expérimental, polices `charged-ieee` absentes). `grep -rln "manual-v2" .` ne laisse plus aucune occurrence hors de ce fichier.
 
+## 6unquadragies. Dépôt GitHub créé et poussé, `palimpsest-specification.md` retiré du suivi git
+
+**Push effectif** : `eusebe/typst-palimpsest` créé sur GitHub (`gh repo create ... --source=. --push`), `main` poussée en deux commits (préparation Universe + régénération d'artefacts), tag `0.1.0` créé et poussé — les permalinks du README (`raw.githubusercontent.com`, `blob/0.1.0/...`) vérifiés un par un après coup (`curl -o /dev/null -w "%{http_code}"`), tous en `200`.
+
+**`palimpsest-specification.md` retiré du suivi git**, sur demande de l'utilisateur après avoir remarqué que le README le mentionnait dans « Documentation » — jugé un fichier interne, sans raison de l'exposer publiquement. Retiré du README (la ligne renvoyant vers lui) ; `git rm --cached` (le fichier reste sur disque, seulement retiré de l'index) ; ajouté à `.gitignore`. **Le fichier garde son rôle de source de vérité pour le développement** (§1 de ce fichier, inchangé — la phrase reste vraie, seul le statut de suivi git a changé) ; conséquence acceptée mais non discutée explicitement avec l'utilisateur : n'étant plus versionné, ses modifications futures ne seront plus tracées par git localement non plus, seulement par l'historique de conversation. Non fait, hors du périmètre de la demande : purger le fichier de l'historique git déjà poussé sur GitHub (les deux commits initiaux le contiennent encore, consultable via l'historique) — une opération destructive (réécriture d'historique + force-push) qui n'a pas été demandée.
+
 ## 7. Points de vigilance identifiés en lisant la spec
 
 - **§7.3 — pas de `hide()`** pour `#del` en mode propre : le contenu ne doit tout simplement pas être émis. En mode suivi, il est émis mais avec compteurs neutralisés (`del-numbering: "none"` par défaut) — à vérifier concrètement sur figures/équations numérotées en cas de test dédié.

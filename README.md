@@ -138,7 +138,6 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 ## Documentation
 
 - [`docs/manual.typ`](docs/manual.typ) (⇒ [pdf](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/docs/manual.pdf)) — the full user manual, one function (and every one of its options) at a time, with a real compiled screenshot for each. Compile it yourself, or read the pdf directly.
-- [`palimpsest-specification.md`](palimpsest-specification.md) — the complete design specification.
 
 ## Examples
 
