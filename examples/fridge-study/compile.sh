@@ -5,7 +5,7 @@
 # manuscript, and the clean and tracked response letter. Still two
 # separate `typst compile` calls, same reason as every other example
 # here: the bundle export shares one label space across every
-# #document() in a single compile (§9.1, docs/manual-v2.typ).
+# #document() in a single compile (§9.1, docs/manual.typ).
 set -e
 cd "$(dirname "$0")/../.."
 

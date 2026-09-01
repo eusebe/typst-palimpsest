@@ -248,7 +248,7 @@ than the behavior itself #cite(<peek2015>, form: "prose").
 // manuscript's own real numbers ("Table 1"/"Table 2") rather than "R"
 // ones, but they still occupy the first two slots of the letter's own
 // counter; only the *displayed* number changed, not how many slots a
-// quoted table consumes. See docs/manual-v2.typ, "Letter numbering".
+// quoted table consumes. See docs/manual.typ, "Letter numbering".
 #figure(
   table(
     columns: 3,

@@ -5,7 +5,7 @@
 // simulation. Regenerate everything with:
 //   bash docs/manual-snippets/compile.sh
 
-#set document(title: "palimpsest — manual (v2)")
+#set document(title: "palimpsest — manual")
 #set page(paper: "a4", margin: (x: 2.2cm, y: 2cm))
 #set text(size: 10.5pt, font: "Libertinus Serif")
 #set heading(numbering: "1.1.")
@@ -35,7 +35,7 @@
   #v(0.5cm)
   #text(size: 1.8em, weight: "bold")[palimpsest]
   #v(0.2em)
-  #text(size: 1.1em, style: "italic")[User manual --- v2]
+  #text(size: 1.1em, style: "italic")[User manual]
   #v(0.8cm)
 ]
 

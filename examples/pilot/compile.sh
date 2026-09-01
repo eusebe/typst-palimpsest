@@ -4,7 +4,7 @@
 # bundle export shares one label space across every #document() in a
 # single compile, so instantiating the manuscript twice (once clean,
 # once tracked) in one compile would duplicate every label it contains.
-# See docs/manual-v2.typ, "Installation and compiling".
+# See docs/manual.typ, "Installation and compiling".
 set -e
 cd "$(dirname "$0")/../.."
 

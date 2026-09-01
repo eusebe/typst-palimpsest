@@ -5,7 +5,7 @@
 You mark changes once, inline, in the manuscript itself. Two `typst compile` commands then produce all of it.
 
 <p align="center">
-  <img src="docs/manual-snippets/passage-basics/result-tracked.png" width="720" alt="A passage with an addition and a replacement, shown in tracked-changes style">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/passage-basics/result-tracked.png" width="720" alt="A passage with an addition and a replacement, shown in tracked-changes style">
 </p>
 
 ## The problem
@@ -101,9 +101,9 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 | Second (`--input mode=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged |
 
 <p align="center">
-  <img src="docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="A manuscript passage after acceptance, in the clean manuscript"><br>
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="A manuscript passage after acceptance, in the clean manuscript"><br>
   <sub>↓ cited verbatim in the letter, real page number included</sub><br>
-  <img src="docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
 </p>
 
 ## A gallery of what's built in
@@ -111,19 +111,19 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 **Three ways to mark a change** — `style: "inline"` (underline/strike in the flow of text, the default), `style: "bar"` (a colored change-bar), or `style: "none"` (a layout sanity check — renders exactly like the clean version even when tracked):
 
 <p align="center">
-  <img src="docs/manual-snippets/style-values/result-tracked.png" width="720" alt="The same addition rendered under the inline, bar, and none styles">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/style-values/result-tracked.png" width="720" alt="The same addition rendered under the inline, bar, and none styles">
 </p>
 
 **Reviewers, editor, and co-authors, colored automatically** — a project doesn't have to be reviewer-only: co-authors can mark their own edits on a shared draft the same way, with their own color and their own section in the letter:
 
 <p align="center">
-  <img src="docs/manual-snippets/anchors-kinds/result-tracked.png" width="720" alt="Additions anchored to a reviewer, the editor, and three co-authors, each with a distinct color">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/anchors-kinds/result-tracked.png" width="720" alt="Additions anchored to a reviewer, the editor, and three co-authors, each with a distinct color">
 </p>
 
 **A checklist that writes itself** — `change-list()`, placed once near the top of the manuscript, tabulates every marked passage in the tracked manuscript only (never in what you submit):
 
 <p align="center">
-  <img src="docs/manual-snippets/change-list-basic/result-tracked.png" width="720" alt="A change-list table summarizing every marked passage by comment, type, page, and section">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/change-list-basic/result-tracked.png" width="720" alt="A change-list table summarizing every marked passage by comment, type, page, and section">
 </p>
 
 ## Beyond the basics
@@ -137,16 +137,16 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 
 ## Documentation
 
-- [`docs/manual-v2.typ`](docs/manual-v2.typ) — the full user manual, one function (and every one of its options) at a time, with a real compiled screenshot for each. Compile it yourself, or read the source directly.
+- [`docs/manual.typ`](docs/manual.typ) (⇒ [pdf](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/docs/manual.pdf)) — the full user manual, one function (and every one of its options) at a time, with a real compiled screenshot for each. Compile it yourself, or read the pdf directly.
 - [`palimpsest-specification.md`](palimpsest-specification.md) — the complete design specification.
 
 ## Examples
 
 Four complete, working projects live under [`examples/`](examples/):
 
-- [**`pilot/`**](examples/pilot/) — the smallest complete three-file project. Copy it as a starting point.
-- [**`fridge-study/`**](examples/fridge-study/) and [**`emoji-email/`**](examples/emoji-email/) — two full, deliberately over-the-top mock studies (multi-page manuscripts built on real Typst Universe templates, `@preview/unequivocal-ams` and `@preview/charged-ieee`, with real figures via `@preview/lilaq`) exercising essentially every feature at once: two reviewers and an editor, co-authors leaving their own notes alongside them, `change-list()`, `suppressed`, both flavors of `pinpoint`, cross-references, and a letter-only bibliography.
-- [**`coauthors-simple/`**](examples/coauthors-simple/) — the no-reviewer, no-letter, no-bundle shape: just `add`/`del`/`change-list` in a single file, for co-authors tracking their own edits with nothing else attached.
+- [**`pilot/`**](examples/pilot/) — the smallest complete three-file project. Copy it as a starting point. (⇒ pdf: [manuscript](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/pilot/main/manuscript.pdf), [tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/pilot/main/manuscript-tracked.pdf), [response](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/pilot/main/response.pdf))
+- [**`fridge-study/`**](examples/fridge-study/) (⇒ pdf: [manuscript](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/fridge-study/main/manuscript.pdf), [tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/fridge-study/main/manuscript-tracked.pdf), [response](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/fridge-study/main/response.pdf), [response-tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/fridge-study/main/response-tracked.pdf)) and [**`emoji-email/`**](examples/emoji-email/) (⇒ pdf: [manuscript](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/emoji-email/main/manuscript.pdf), [tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/emoji-email/main/manuscript-tracked.pdf), [response](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/emoji-email/main/response.pdf), [response-tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/emoji-email/main/response-tracked.pdf)) — two full, deliberately over-the-top mock studies (multi-page manuscripts built on real Typst Universe templates, `@preview/unequivocal-ams` and `@preview/charged-ieee`, with real figures via `@preview/lilaq`) exercising essentially every feature at once: two reviewers and an editor, co-authors leaving their own notes alongside them, `change-list()`, `suppressed`, both flavors of `pinpoint`, cross-references, and a letter-only bibliography.
+- [**`coauthors-simple/`**](examples/coauthors-simple/) (⇒ pdf: [manuscript](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/coauthors-simple/manuscript.pdf), [tracked](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/examples/coauthors-simple/manuscript-tracked.pdf)) — the no-reviewer, no-letter, no-bundle shape: just `add`/`del`/`change-list` in a single file, for co-authors tracking their own edits with nothing else attached.
 
 Each ships its own `compile.sh`.
 
