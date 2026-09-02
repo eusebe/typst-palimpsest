@@ -54,7 +54,6 @@
   ),
   exchanges: include "responses.typ",
   letter-template: letter-template,
-  letter: true,
 )
 
 #include "manuscript.typ"

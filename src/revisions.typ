@@ -16,9 +16,11 @@
 /// label in it too):
 ///
 /// - `typst compile --features bundle --format bundle main.typ` (`mode`
-///   defaults to `"clean"`) → `manuscript.pdf` + `response.pdf`.
+///   defaults to `"clean"`) → `manuscript.pdf`, plus `response.pdf` if
+///   `exchanges` is set (see below).
 /// - `typst compile --features bundle --format bundle --input
-///   mode=tracked main.typ` → `manuscript-tracked.pdf` only.
+///   mode=tracked main.typ` → `manuscript-tracked.pdf`, plus
+///   `response-tracked.pdf` under the same condition.
 ///
 /// Both flags are required — `--features bundle` alone still errors
 /// ("constructing a document is only supported in the bundle target"),
@@ -33,27 +35,30 @@
 /// nothing else with it. `strict` turns every diagnostic in the bundle
 /// into a compile error (§11) — the CI gate.
 ///
-/// `letter` controls whether a response document is produced in this
-/// compile:
+/// Whether a response document is produced in this compile isn't a
+/// parameter of this function at all — there would be nothing sensible
+/// for it to mean independently of `exchanges`: writing responses with
+/// no letter to put them in, or asking for a letter with nothing
+/// written, are both non-cases. So it's derived: a letter is produced
+/// whenever `exchanges` isn't `none`, matching *this* compile's own
+/// `mode` — `response.pdf` from the clean compile, `response-tracked.pdf`
+/// (a name distinct from `response.pdf`, so neither compile can
+/// silently overwrite the other's output) from the tracked one, each
+/// citing and quoting its own manuscript. No extra flag needed to get
+/// a tracked letter: writing `exchanges` and running both compiles is
+/// enough.
 ///
-/// - `auto` (default) — today's behavior: the letter is produced only
-///   in the clean compile (`response.pdf`, alongside `manuscript.pdf`);
-///   the tracked compile never produces one.
-/// - `true` — force the letter to be produced regardless of mode. In
-///   tracked mode this makes `pinpoint`'s page citations resolve
-///   against `manuscript-tracked.pdf` instead of the clean manuscript,
-///   at the cost of a second, separate compile — the tracked letter is
-///   named `response-tracked.pdf`, never `response.pdf`, so running
-///   both compiles into the same output directory can't have one
-///   silently overwrite the other.
-/// - `false` — force no letter in either mode, for a pure
-///   change-tracking workflow that never writes a response document.
+/// The one thing that *is* a per-run, command-line choice — not a fixed
+/// property of the project — is skipping the letter for a single
+/// compile even though `exchanges` is set, e.g. for a fast
+/// manuscript-only preview while drafting: `--input letter=false`.
+/// `--input letter=true` is the symmetric, rarely-needed override
+/// (force a letter even with `exchanges: none`).
 #let revisions(
   template: body => body,
   exchanges: none,
   round: 1,
   letter-template: auto,
-  letter: auto,
   strict: false,
   body,
 ) = {
@@ -62,7 +67,10 @@
   }
 
   let mode = sys.inputs.at("mode", default: "clean")
-  let show-letter = if letter == auto { mode == "clean" } else { letter }
+  let letter-input = sys.inputs.at("letter", default: none)
+  let show-letter = if letter-input == "false" { false }
+    else if letter-input == "true" { true }
+    else { exchanges != none }
 
   document(if mode == "tracked" { "manuscript-tracked.pdf" } else { "manuscript.pdf" }, {
     template(body)

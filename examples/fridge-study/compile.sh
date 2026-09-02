@@ -1,10 +1,10 @@
 #!/bin/bash
-# `letter: true` (see main.typ) makes both compiles produce a response
-# document, not just the clean one — so this project's two compiles
-# together produce all four submission documents: the clean and tracked
-# manuscript, and the clean and tracked response letter. Still two
-# separate `typst compile` calls, same reason as every other example
-# here: the bundle export shares one label space across every
+# `exchanges` (see main.typ) is set, so both compiles produce a
+# response document, not just the clean one — this project's two
+# compiles together produce all four submission documents: the clean
+# and tracked manuscript, and the clean and tracked response letter.
+# Still two separate `typst compile` calls, same reason as every other
+# example here: the bundle export shares one label space across every
 # #document() in a single compile (§9.1, docs/manual.typ).
 set -e
 cd "$(dirname "$0")/../.."

@@ -98,15 +98,15 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 | Command | Produces |
 |---|---|
 | First (mode defaults to `clean`) | `manuscript.pdf` — what you submit, no marks visible at all — and `response.pdf`, the letter |
-| Second (`--input mode=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged |
+| Second (`--input mode=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged — and `response-tracked.pdf`, the same letter citing *this* manuscript's own pagination |
 
-The same passage, through the whole pipeline. Marked once, in the manuscript — a replacement and a deletion, both anchored to a reviewer comment:
+A letter comes out of *both* compiles automatically, as soon as `exchanges:` is set — no separate flag to remember. The same passage, through the whole pipeline. Marked once, in the manuscript — a replacement and a deletion, both anchored to a reviewer comment:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-tracked.png" width="720" alt="The same passage in manuscript-tracked.pdf: a replacement struck and underlined, a deletion struck, both anchor-tagged">
 </p>
 
-That's `manuscript-tracked.pdf`. In `manuscript.pdf` — what you actually submit — the same passage carries no trace of either mark:
+That's `manuscript-tracked.pdf`. In `manuscript.pdf` — what you actually submit — the same passage carries no trace of either mark, and the letter from that same compile, `response.pdf`, quotes the accepted wording only:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="The same passage in the clean manuscript.pdf: no marks, no anchor tags"><br>
@@ -114,28 +114,13 @@ That's `manuscript-tracked.pdf`. In `manuscript.pdf` — what you actually submi
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
 </p>
 
-That's `response.pdf`, from the first compile — and by default that's as far as it goes: it always cites the *clean* manuscript's pages, even for a reviewer who actually reads `manuscript-tracked.pdf`. Pass `letter: true` to `revisions()`:
-
-```typ
-#show: revisions.with(
-  template: my-journal-template.with(title: [...], authors: (...)),
-  exchanges: include "responses.typ",
-  letter: true,
-)
-```
-
-Nothing changes on the command line — the exact same two compiles as above now also produce a *second* letter from the second compile:
-
-```sh
-typst compile --features bundle --format bundle main.typ
-typst compile --features bundle --format bundle --input mode=tracked main.typ
-```
-
-`response-tracked.pdf` quotes the very same excerpt — but now showing its real tracked wording, struck and underlined, sourced from `manuscript-tracked.pdf`'s own pagination:
+`response-tracked.pdf`, from the *second* compile, quotes the very same excerpt — but now showing its real tracked wording, struck and underlined, sourced from `manuscript-tracked.pdf`'s own pagination, because a citation follows whichever mode it's actually compiled under:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-tracked.png" width="720" alt="The same excerpt in response-tracked.pdf: the tracked wording, struck and underlined, quoted verbatim">
 </p>
+
+Don't want a letter for a particular run — a fast, manuscript-only preview while drafting? `--input letter=false` skips it on either compile, without touching `main.typ`.
 
 ## A gallery of what's built in
 
@@ -163,7 +148,7 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 - **`xref`/`xcomment`** — `xref(<label>)` cites a manuscript figure/table/equation by its real number *and* page; `xcomment(<anchor>)` links to another comment in the letter itself ("as already discussed in comment R1-2").
 - **`letter-bibliography`** — a second, independently-numbered bibliography for citations the letter makes on its own, alongside the manuscript's normal one.
 - **`pinpoint(mode: "tracked" | "clean")`** — quote the *tracked* wording in an otherwise-clean letter (or vice versa), for "look, we removed exactly what you objected to."
-- **`revisions(letter: true, ...)`** — produce a response letter from *both* compiles, so the tracked one cites the tracked manuscript's own pagination for reviewers who read that file.
+- **`--input letter=false`** — skip the letter for one particular compile even though `exchanges:` is set, for a fast manuscript-only preview while drafting.
 - **`set-strict(true)`** — turn every diagnostic (orphan comment, duplicate exchange, unanswered anchor, empty response...) into a hard compile error, for a CI gate right before submission.
 
 ## Documentation

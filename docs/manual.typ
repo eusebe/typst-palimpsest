@@ -457,7 +457,7 @@ Response:
 
 == `mode:`: overriding style for one excerpt
 
-An excerpt renders, by default, in whichever mode the *current* compile is running under --- clean text only in `response.pdf` (the default with `letter: auto`, see #link(<sec-letter-option>)[letter:]), struck-through/underlined tracked style in `response-tracked.pdf` (with `letter: true`). `mode:` overrides this for one call, in either direction.
+An excerpt renders, by default, in whichever mode the *current* compile is running under --- clean text in `response.pdf`, struck-through/underlined tracked style in `response-tracked.pdf` (both produced automatically once `exchanges` is set, see #link(<sec-letter-option>)[below]). `mode:` overrides this for one call, in either direction.
 
 `mode: "tracked"`, called from a clean letter, shows the tracked style even though `response.pdf` itself is otherwise all clean text:
 
@@ -473,7 +473,7 @@ Response:
 
 Useful when the point being made is "we removed exactly what you objected to," which a clean, final-text quote doesn't convey on its own.
 
-The reverse also works: `mode: "clean"`, called from a letter compiled tracked (`letter: true`, `--input mode=tracked`), shows the final wording for one excerpt even though the rest of that same letter is otherwise quoting tracked style:
+The reverse also works: `mode: "clean"`, called from a letter compiled tracked (`--input mode=tracked`, `exchanges` set), shows the final wording for one excerpt even though the rest of that same letter is otherwise quoting tracked style:
 
 #code-of("manual-snippets/pinpoint-mode-clean-in-tracked-letter.typ")
 
@@ -617,7 +617,7 @@ Not the default, since a manuscript mid-revision should still compile --- meant 
 
 = `revisions`: the pilot, and the final assembly <sec-project-layout>
 
-#code("#show: revisions.with(template: ..., exchanges: ..., letter-template: auto, letter: auto, strict: false)")
+#code("#show: revisions.with(template: ..., exchanges: ..., letter-template: auto, strict: false)")
 
 Every example so far ran `add`/`del`/`passage`/`change-list`/... directly, no bundle. `revisions` is the one piece that actually needs one --- it's what turns a manuscript and a set of exchanges into the three files of a real project.
 
@@ -656,50 +656,55 @@ Two commands, run one after the other, produce the whole project:
 
 #shot("manual-snippets/revisions-pilot/response-clean.png")
 
-*Second command* (`--input mode=tracked`) --- `manuscript-tracked.pdf`, and *only* that file: this second compile never produces `response.pdf` again, and the first never produces a tracked manuscript --- each compile produces exactly the file(s) for its own mode, never a mix of the two:
+*Second command* (`--input mode=tracked`) --- `manuscript-tracked.pdf`:
 
 #shot("manual-snippets/revisions-pilot/manuscript-tracked.png")
 
-Five parameters:
+--- and, since `exchanges` is set, `response-tracked.pdf`: the same letter, but citing and quoting *this* manuscript, the tracked one --- see below for why that happens automatically, with no separate setting:
+
+#shot("manual-snippets/revisions-pilot/response-tracked.png")
+
+Each compile produces exactly the file(s) for its own mode, never a mix of the two --- the first never produces a tracked manuscript, and neither compile's letter is named the same as the other's.
+
+Four parameters:
 
 / `template`: wraps the manuscript only --- any `content -> content` function, including a real journal template used the normal way. `authors:`/`title:` above are this example's own stand-in template's parameters, not `revisions`'s.
 / `letter-template`: wraps the letter only, separately --- `auto` (the default) uses `default-letter-template`, a title and nothing else. The two templates never mix: a figure/table/heading style set inside one has no effect on the other.
-/ `exchanges`: the already-evaluated content of the responses file --- `include "responses.typ"`, as shown above.
-/ `letter`: whether this compile produces a response document at all --- see below.
+/ `exchanges`: the already-evaluated content of the responses file --- `include "responses.typ"`, as shown above. Also decides whether a letter is produced at all --- see below.
 / `strict`: `revisions(strict: true, ...)` is shorthand for `set-strict(true)` at the top of the pilot.
 
 Each source file needs its own `#import "palimpsest/lib.typ": *` --- `#include` doesn't share scope, so `manuscript.typ` and `responses.typ` both import it too, even though only `main.typ` calls `revisions`.
 
-== `letter:` --- matching the letter to the manuscript you actually send <sec-letter-option>
+== The letter, automatically --- matched to the manuscript you actually send <sec-letter-option>
 
-This option changes nothing about the command line --- it's still the exact same two commands shown above. Only the `letter: ...` value passed to `revisions()` inside `main.typ` changes what each of those two commands writes to disk.
+Whether a compile produces a response document isn't something you configure --- there's nothing sensible for it to mean independently of `exchanges`: writing responses with no letter to hold them, or asking for a letter with nothing written, are both non-cases. So it's derived: a letter is produced whenever `exchanges` isn't `none`, matching *this compile's own* mode --- `response.pdf` from the clean compile, `response-tracked.pdf` from the tracked one, each citing and quoting its own manuscript. This changes nothing about the command line --- it's still the exact same two commands shown above.
 
-By default, `response.pdf` is only ever produced by the clean compile, and its `pinpoint`/`xref` calls resolve against `manuscript.pdf` --- even if the person reading the letter is actually looking at `manuscript-tracked.pdf`. `letter: true` produces a response document in *both* compiles, so the tracked one can quote the tracked wording and cite the tracked manuscript's own pagination.
-
-#code-of("manual-snippets/revisions-letter-option.typ")
+#code-of("manual-snippets/revisions-exchanges-letter.typ")
 
 Compiled clean, `response.pdf` quotes the accepted wording only:
 
-#shot("manual-snippets/revisions-letter-option/response-clean.png")
+#shot("manual-snippets/revisions-exchanges-letter/response-clean.png")
 
-Compiled with `--input mode=tracked`, `letter: true` additionally produces `response-tracked.pdf` --- a name distinct from `response.pdf`, so neither compile can silently overwrite the other's output. Its excerpt shows the struck-through old wording next to the underlined new wording, because `pinpoint(excerpt: true)` with no explicit `mode:` always follows whichever mode the *current* compile is running under (see #link(<sec-pinpoint-page>)[pinpoint] above):
+Compiled with `--input mode=tracked`, the same `exchanges` also produces `response-tracked.pdf` --- a name distinct from `response.pdf`, so neither compile can silently overwrite the other's output. Its excerpt shows the struck-through old wording next to the underlined new wording, because `pinpoint(excerpt: true)` with no explicit `mode:` always follows whichever mode the *current* compile is running under (see #link(<sec-pinpoint-page>)[pinpoint] above):
 
-#shot("manual-snippets/revisions-letter-option/response-tracked.png")
+#shot("manual-snippets/revisions-exchanges-letter/response-tracked.png")
 
-Three settings:
+The one thing that *is* a command-line choice, not a fixed property of the project, is skipping the letter for a single run even though `exchanges` is set --- a fast, manuscript-only preview while drafting, without touching `main.typ`:
 
-/ `auto` (default): unchanged from every earlier example in this manual --- a letter only in the clean compile, as `response.pdf`. The tracked compile produces `manuscript-tracked.pdf` alone.
-/ `true`: a letter in both compiles, the tracked one named `response-tracked.pdf`.
-/ `false`: no letter in *either* compile --- for a pure change-tracking project that never writes a response document, where `auto` would otherwise still produce a near-empty `response.pdf` from the clean compile.
+```sh
+typst compile --features bundle --format bundle --input letter=false main.typ
+```
 
-What each command writes, for each setting:
+`--input letter=true` is the symmetric, rarely-needed override --- force a letter even with `exchanges: none`.
+
+What each command writes, with `exchanges` set:
 
 #table(
-  columns: (1fr, 1fr, 1fr, 1fr),
+  columns: (1fr, 1fr, 1fr),
   stroke: 0.5pt + luma(210),
   fill: (x, y) => if y == 0 { luma(247) },
   align: horizon,
-  [*Command*], [*`letter: auto`*], [*`letter: true`*], [*`letter: false`*],
-  [1st (clean)], [`manuscript.pdf`\ `response.pdf`], [`manuscript.pdf`\ `response.pdf`], [`manuscript.pdf`],
-  [2nd (tracked)], [`manuscript-tracked.pdf`], [`manuscript-tracked.pdf`\ `response-tracked.pdf`], [`manuscript-tracked.pdf`],
+  [*Command*], [*default*], [*`--input letter=false`*],
+  [1st (clean)], [`manuscript.pdf`\ `response.pdf`], [`manuscript.pdf`],
+  [2nd (tracked)], [`manuscript-tracked.pdf`\ `response-tracked.pdf`], [`manuscript-tracked.pdf`],
 )

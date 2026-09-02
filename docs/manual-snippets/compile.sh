@@ -3,7 +3,7 @@
 # the manual file(s) that use them — the two-pipeline approach: real
 # example .typ files under docs/manual-snippets/ are compiled for
 # real (clean and tracked, genuinely separate compiles), and the manual
-# itself (docs/manual-*.typ) just does read()/image() on the results,
+# itself (docs/manual*.typ) just does read()/image() on the results,
 # no package import, no eval().
 #
 # Snippet convention, so this script can stay generic instead of
@@ -97,7 +97,7 @@ for src in docs/manual-snippets/*.typ; do
 done
 
 echo "Snippets regenerated. Compiling manual(s)..."
-for manual in docs/manual-*.typ; do
+for manual in docs/manual*.typ; do
     [ -f "$manual" ] || continue
     typst compile --root . "$manual"
     echo "  $manual"

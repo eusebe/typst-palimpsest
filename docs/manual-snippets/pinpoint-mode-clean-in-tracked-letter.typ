@@ -16,7 +16,6 @@
   template: my-template,
   letter-template: my-template,
   exchanges: exchanges,
-  letter: true,
 )
 
 #passage(<r1-1>)[The treatment #rep[has an effect][has a clinically meaningful effect] on survival.]

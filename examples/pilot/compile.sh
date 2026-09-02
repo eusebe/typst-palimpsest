@@ -1,5 +1,5 @@
 #!/bin/bash
-# Produces all three submission documents from this example in one
+# Produces all four submission documents from this example in one
 # command. Two separate `typst compile` calls are unavoidable — Typst's
 # bundle export shares one label space across every #document() in a
 # single compile, so instantiating the manuscript twice (once clean,
@@ -11,4 +11,4 @@ cd "$(dirname "$0")/../.."
 typst compile --features bundle --format bundle --root . examples/pilot/main.typ
 typst compile --features bundle --format bundle --root . --input mode=tracked examples/pilot/main.typ
 
-echo "manuscript.pdf, response.pdf, manuscript-tracked.pdf ready in examples/pilot/main/"
+echo "manuscript.pdf, response.pdf, manuscript-tracked.pdf, response-tracked.pdf ready in examples/pilot/main/"
