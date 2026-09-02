@@ -100,13 +100,21 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 | First (mode defaults to `clean`) | `manuscript.pdf` — what you submit, no marks visible at all — and `response.pdf`, the letter |
 | Second (`--input mode=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged |
 
+The same passage, through the whole pipeline. Marked once, in the manuscript — a replacement and a deletion, both anchored to a reviewer comment:
+
 <p align="center">
-  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="A manuscript passage after acceptance, in the clean manuscript"><br>
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-tracked.png" width="720" alt="The same passage in manuscript-tracked.pdf: a replacement struck and underlined, a deletion struck, both anchor-tagged">
+</p>
+
+That's `manuscript-tracked.pdf`. In `manuscript.pdf` — what you actually submit — the same passage carries no trace of either mark:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="The same passage in the clean manuscript.pdf: no marks, no anchor tags"><br>
   <sub>↓ cited verbatim in the letter, real page number included</sub><br>
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
 </p>
 
-By default `response.pdf` only comes from the first compile, so it always cites the *clean* manuscript's pages — even for a reviewer who actually reads `manuscript-tracked.pdf`. Pass `letter: true` to `revisions()` and the second compile produces its own letter too, `response-tracked.pdf`, citing the tracked manuscript's own pagination and quoting its real tracked wording:
+That's `response.pdf`, from the first compile — and by default that's as far as it goes: it always cites the *clean* manuscript's pages, even for a reviewer who actually reads `manuscript-tracked.pdf`. Pass `letter: true` to `revisions()`:
 
 ```typ
 #show: revisions.with(
@@ -116,10 +124,17 @@ By default `response.pdf` only comes from the first compile, so it always cites 
 )
 ```
 
-Same two commands as above — the second one now also writes `response-tracked.pdf` next to `manuscript-tracked.pdf`:
+Nothing changes on the command line — the exact same two compiles as above now also produce a *second* letter from the second compile:
+
+```sh
+typst compile --features bundle --format bundle main.typ
+typst compile --features bundle --format bundle --input mode=tracked main.typ
+```
+
+`response-tracked.pdf` quotes the very same excerpt — but now showing its real tracked wording, struck and underlined, sourced from `manuscript-tracked.pdf`'s own pagination:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/revisions-letter-option/response-tracked.png" width="720" alt="A response letter produced by the tracked compile, quoting the manuscript's own struck-and-underlined tracked wording">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-tracked.png" width="720" alt="The same excerpt in response-tracked.pdf: the tracked wording, struck and underlined, quoted verbatim">
 </p>
 
 ## A gallery of what's built in

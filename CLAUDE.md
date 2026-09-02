@@ -826,6 +826,16 @@ Remarqué par l'utilisateur : le README ne parlait nulle part de `revisions(lett
 
 **Vérifié** : URL du permalink testée directement (`curl -o /dev/null -w "%{http_code}"` → `200`), pas de recompilation nécessaire (aucun fichier `.typ`/`.pdf` touché, seulement `README.md`).
 
+## 6sexquadragies. README « Two compiles » — un seul passage de bout en bout, commande répétée
+
+Deux retours de l'utilisateur sur la section ajoutée en §6quinquadragies : (1) l'image `revisions-letter-option/response-tracked.png` montrait un passage *différent* (« has an effect » → « has a clinically meaningful effect ») de celui des deux images précédentes (`pinpoint-excerpt`, « sample size... power calculation ») — pas pédagogique, mieux vaut le même passage partout ; (2) montrer la commande `typst compile` complète même dans la partie `letter: true`, précisément pour que le lecteur voie qu'elle ne change pas.
+
+**Corrigé** : la section entière repose maintenant sur un seul jeu d'images, `docs/manual-snippets/pinpoint-excerpt/` — qui se trouve déjà avoir les quatre variantes nécessaires (`manuscript-tracked`, `manuscript-clean`, `response-clean`, `response-tracked`) puisque c'est un bundle à deux `#document(...)` toujours compilé dans les deux modes par le script générique, aucun nouveau snippet nécessaire. Nouvel enchaînement : marqué (`manuscript-tracked.png`, remplacement souligné/barré + suppression barrée, jamais montré seul jusqu'ici dans le README) → propre (`manuscript-clean.png`, plus légendé — répond aussi à la première demande de l'utilisateur, une légende manquante avant la flèche existante) → cité dans la lettre propre (`response-clean.png`, déjà présent) → cité dans la lettre *suivie* (`response-tracked.png`, même excerpt, texte réellement barré/souligné). La commande `typst compile` à deux lignes apparaît maintenant deux fois : une fois pour le cas par défaut, une seconde fois identique juste après l'introduction de `letter: true`, avec la phrase « Nothing changes on the command line » pour rendre le point explicite.
+
+**Note de précision, pas corrigée dans le texte** (jugé superflu pour un README) : `pinpoint-excerpt.typ` n'utilise pas réellement `revisions(letter: true, ...)` — c'est un bundle écrit à la main avec deux `#document(...)` inconditionnels, qui produit donc toujours les deux lettres quel que soit le mode de compilation, exactement le même résultat visuel que `letter: true` obtient via `revisions()` (§6novodecies). L'image est fidèle à ce que montre réellement `response-tracked.pdf` sous `letter: true` — seule la source du snippet diffère techniquement de celle affichée dans le code Typst du README, jamais montrée elle-même.
+
+**Vérifié** : les quatre permalinks (`raw.githubusercontent.com/.../0.1.0/docs/manual-snippets/pinpoint-excerpt/*.png`) testés en `curl`, tous en `200` — aucune recompilation nécessaire, seul `README.md` a changé.
+
 ## 7. Points de vigilance identifiés en lisant la spec
 
 - **§7.3 — pas de `hide()`** pour `#del` en mode propre : le contenu ne doit tout simplement pas être émis. En mode suivi, il est émis mais avec compteurs neutralisés (`del-numbering: "none"` par défaut) — à vérifier concrètement sur figures/équations numérotées en cas de test dédié.
