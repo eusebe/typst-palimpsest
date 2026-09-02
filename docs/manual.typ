@@ -55,7 +55,7 @@ A full project (manuscript, tracked manuscript, response letter) compiles with t
   "typst compile --features bundle --format bundle --input mode=tracked main.typ"
 )
 
-The first produces `manuscript.pdf` and `response.pdf`; the second produces `manuscript-tracked.pdf`. Marking functions --- `add`, `del`, `rep`, `passage`, `set-revisions` --- also work directly in a single ordinary file, with a plain `typst compile` / `typst compile --input mode=tracked`, no bundle involved --- that's the form used throughout the next chapter.
+The first produces `manuscript.pdf` and, once there are responses to answer, `response.pdf`; the second produces `manuscript-tracked.pdf` and, under the same condition, `response-tracked.pdf`. Marking functions --- `add`, `del`, `rep`, `passage`, `set-revisions` --- also work directly in a single ordinary file, with a plain `typst compile` / `typst compile --input mode=tracked`, no bundle involved --- that's the form used throughout the next chapter.
 
 = Marking changes: `add`, `del`, `rep`, `suppress`
 
@@ -92,7 +92,7 @@ If you want the removed material kept at hand in the source to reconsider later,
 
 #code(
   "// #figure(table(...), caption: [The old table.])\n" +
-  "#suppressed(<r2-1>, [Table removed: see response.])"
+  "#passage(<r2-1>)[#suppress[Table removed: see response.]]"
 )
 
 == `set-revisions`: every option, one at a time
@@ -267,7 +267,7 @@ Still colored and tagged like any other passage --- just nothing struck or under
 
 == Deleting a numbered figure under a template with its own numbering
 
-`suppress`/`suppressed`, above, exist because of a real limitation: some templates (`charged-ieee`, `unequivocal-ams`) reimplement figure numbering with their own show rule, which doesn't cooperate with `del-numbering: "none"` --- deleting a real `figure(...)` under one of these can leak a visible number onto the deleted figure, and even shift the numbers of every figure that follows it. `suppressed` sidesteps the whole problem by never emitting a real `figure()` at all --- but it also never shows the original content, only a note.
+`suppress`/`suppressed`, above, exist because of a real limitation: some templates --- `charged-ieee` is a real example --- reimplement figure numbering with their own show rule, which doesn't cooperate with `del-numbering: "none"` --- deleting a real `figure(...)` under one of these can leak a visible number onto the deleted figure, and even shift the numbers of every figure that follows it. `suppressed` sidesteps the whole problem by never emitting a real `figure()` at all --- but it also never shows the original content, only a note.
 
 When the deleted figure is short and worth keeping visible --- not replaced by a note --- skip `figure()` entirely instead: a plain block with the image and a hand-written caption never reaches the template's numbering machinery, because `del`'s automatic styling only special-cases a genuine `figure`/`table`/`math.equation`.
 
@@ -507,7 +507,7 @@ Response:
 
 #shot("manual-snippets/xref-basic/response-clean.png")
 
-A bare `@fig-a` already gets the number right, since the letter and the manuscript share one bundle --- `xref` only adds the page. Worth using explicitly anyway: a bare reference stays correct even if some future version of the package needs a second copy of the manuscript in the bundle for some other reason, where `@fig-a` alone would turn ambiguous between the two copies and `xref` would not. A label that doesn't exist anywhere warns rather than breaking the compile.
+A bare `@fig-a` already gets the number right, since the letter and the manuscript share one bundle --- `xref` only adds the page. A label that doesn't exist anywhere warns rather than breaking the compile.
 
 = `change-list`: a summary table of every marked passage
 
@@ -597,9 +597,11 @@ Response:
 
 The letter's own figure above is captioned "Figure R2," not "Figure R1" --- the excerpt before it still occupies the first slot of the letter's own counter, even though what it *displays* is the manuscript's number rather than that slot's. Already true before either was ever matched to the manuscript (an excerpt has always advanced the letter's counter); the only thing that changed is what a matched excerpt shows on the page.
 
+The same matching applies to a numbered equation `pinpoint(excerpt: true)` re-emits: it keeps the manuscript's own equation number too, not a letter-local one --- equations have no `R`-prefixed sequence of their own to fall back to in the first place.
+
 = Diagnostics and strict mode
 
-Typst has no public API for a script to emit its own compiler warning, so every check below shows instead as a visible box, right at the fault --- muted in the clean compile for anything embedded in the manuscript itself (`manuscript.pdf` must never carry one, since it's the file actually sent out under review), shown regardless of mode for anything embedded in the letter (`response.pdf` has no separate tracked compile to show it in instead).
+Typst has no public API for a script to emit its own compiler warning, so every check below shows instead as a visible box, right at the fault --- muted in the clean compile for anything embedded in the manuscript itself (`manuscript.pdf` must never carry one, since it's the file actually sent out under review), shown regardless of mode for anything embedded in the letter (the letter is never sent out for blind review the way the manuscript is, so hiding it in one mode buys nothing).
 
 Two already appeared earlier, in context: a numbered anchor with #link(<sec-req-exch>)[no matching exchange] and a bare anchor's exemption from it; `pinpoint` with #link(<sec-pinpoint-page>)[no matching anchor] (`on-empty:`). Four more:
 

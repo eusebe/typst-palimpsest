@@ -10,11 +10,11 @@
 = Introduction
 
 #added(<r1-1>)[A reviewer's addition.]
-#added(<bob-1>)[Bobby's own addition.]
+#deleted(<bob-1>)[Bobby's own deletion.]
 
 == Background
 
-#added(<r1-2>)[A second reviewer comment, addressed in this subsection.]
+#replaced(<r1-2>)[A second reviewer comment, addressed in this subsection.][A second reviewer comment, revised in this subsection.]
 
 = Methods
 
