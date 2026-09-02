@@ -863,6 +863,14 @@ Suite d'une longue discussion de conception avec l'utilisateur, partie d'une sim
 
 **Non fait, à faire au moment de la prochaine release** : les permalinks du README pointent tous vers le tag `0.1.0`, antérieur à ce changement — `examples/pilot/main/response-tracked.pdf` existe maintenant mais n'a pas de lien dans le README (les trois liens `pilot` existants restent corrects, juste incomplets). Nécessite un nouveau tag pour être ajouté proprement ; pas fait ici, changement de version/tag laissé à la décision de l'utilisateur.
 
+## 6octoquadragies. README « Two compiles » — légende devant chaque image, manuscrit suivi apparié à la lettre suivie
+
+Deux retours de l'utilisateur sur la section revue en §6sexquadragies : (1) `manuscript-tracked.png` (la toute première image de la séquence) n'avait aucune légende introductive, contrairement au couple `manuscript-clean.png`/`response-clean.png` qui en a une entre les deux ; (2) `response-tracked.png` s'affichait seule, sans son pendant `manuscript-tracked.png` juste à côté — asymétrique avec le couple propre.
+
+**Corrigé** : `manuscript-tracked.png` réutilisée une seconde fois (déjà montrée plus haut dans la section), appariée à `response-tracked.png` dans son propre bloc `<p align="center">`, structure identique au couple propre. Chaque image de toute la séquence a maintenant sa légende `<sub>↓ ...</sub>` introductive — y compris la toute première occurrence de `manuscript-tracked.png`, qui n'en avait aucune avant.
+
+**Vérifié** : uniquement `README.md` touché (les images réutilisées existent déjà, permalinks déjà vérifiés en §6sexquadragies) — pas de recompilation nécessaire.
+
 ## 7. Points de vigilance identifiés en lisant la spec
 
 - **§7.3 — pas de `hide()`** pour `#del` en mode propre : le contenu ne doit tout simplement pas être émis. En mode suivi, il est émis mais avec compteurs neutralisés (`del-numbering: "none"` par défaut) — à vérifier concrètement sur figures/équations numérotées en cas de test dédié.

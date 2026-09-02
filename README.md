@@ -103,20 +103,25 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
 A letter comes out of *both* compiles automatically, as soon as `exchanges:` is set — no separate flag to remember. The same passage, through the whole pipeline. Marked once, in the manuscript — a replacement and a deletion, both anchored to a reviewer comment:
 
 <p align="center">
+  <sub>↓ manuscript-tracked.pdf --- every change visible, anchor-tagged</sub><br>
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-tracked.png" width="720" alt="The same passage in manuscript-tracked.pdf: a replacement struck and underlined, a deletion struck, both anchor-tagged">
 </p>
 
-That's `manuscript-tracked.pdf`. In `manuscript.pdf` — what you actually submit — the same passage carries no trace of either mark, and the letter from that same compile, `response.pdf`, quotes the accepted wording only:
+Once accepted, `manuscript.pdf` — what you actually submit — carries no trace of either mark, and the letter from that same compile quotes the accepted wording only:
 
 <p align="center">
+  <sub>↓ manuscript.pdf --- the same passage, accepted, no marks</sub><br>
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-clean.png" width="720" alt="The same passage in the clean manuscript.pdf: no marks, no anchor tags"><br>
   <sub>↓ cited verbatim in the letter, real page number included</sub><br>
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
 </p>
 
-`response-tracked.pdf`, from the *second* compile, quotes the very same excerpt — but now showing its real tracked wording, struck and underlined, sourced from `manuscript-tracked.pdf`'s own pagination, because a citation follows whichever mode it's actually compiled under:
+The second compile cites that same passage against *its own* manuscript instead — `response-tracked.pdf` quotes the real tracked wording, struck and underlined, because a citation always follows whichever mode it's actually compiled under:
 
 <p align="center">
+  <sub>↓ manuscript-tracked.pdf --- the same passage as above</sub><br>
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/manuscript-tracked.png" width="720" alt="The same passage in manuscript-tracked.pdf: a replacement struck and underlined, a deletion struck, both anchor-tagged"><br>
+  <sub>↓ cited verbatim in the letter, tracked wording and page included</sub><br>
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-tracked.png" width="720" alt="The same excerpt in response-tracked.pdf: the tracked wording, struck and underlined, quoted verbatim">
 </p>
 
