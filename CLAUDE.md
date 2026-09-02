@@ -820,6 +820,12 @@ Demandé par l'utilisateur : montrer la suppression d'une figure dans « l'autre
 
 **Vérifié** : `bash examples/fridge-study/compile.sh`, `bash compile.sh` (régression complète), aucune erreur. `manuscript.pdf` (propre) : aucune trace du graphique (`pdftotext`, absent). `manuscript-tracked.pdf` : présent, croisé, « Figure 1 »/« Figure 2 » inchangés autour de lui. `response.pdf` : échange R2-7 correct, « Figure 1 » (référence en dur dans le texte du relecteur, vérifié contre le vrai numéro de `@fig-dose-response` avant d'écrire — même précaution que l'erreur corrigée en §6trequadragies).
 
+## 6quinquadragies. `letter: true` mentionné dans le README
+
+Remarqué par l'utilisateur : le README ne parlait nulle part de `revisions(letter: true, ...)` (§6novodecies) — seul le README manquait cette mention, `docs/manual.typ` la documentait déjà (chapitre `revisions`, `<sec-letter-option>`). Ajouté juste après le tableau/l'image « Two compiles produce everything » (avant `## A gallery of what's built in`) : un paragraphe expliquant que `response.pdf` cite par défaut les pages du manuscrit *propre* même pour un relecteur qui lit `manuscript-tracked.pdf`, le code `revisions.with(..., letter: true)`, et une image — réutilisation directe de `docs/manual-snippets/revisions-letter-option/response-tracked.png` (déjà existant, généré pour le chapitre 11 du manuel, déjà présent dans le premier commit donc déjà dans l'arbre du tag `0.1.0` — permalink vérifié `curl` en `200` sans avoir besoin de retag).
+
+**Vérifié** : URL du permalink testée directement (`curl -o /dev/null -w "%{http_code}"` → `200`), pas de recompilation nécessaire (aucun fichier `.typ`/`.pdf` touché, seulement `README.md`).
+
 ## 7. Points de vigilance identifiés en lisant la spec
 
 - **§7.3 — pas de `hide()`** pour `#del` en mode propre : le contenu ne doit tout simplement pas être émis. En mode suivi, il est émis mais avec compteurs neutralisés (`del-numbering: "none"` par défaut) — à vérifier concrètement sur figures/équations numérotées en cas de test dédié.

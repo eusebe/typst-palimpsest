@@ -106,6 +106,22 @@ typst compile --features bundle --format bundle --input mode=tracked main.typ
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-clean.png" width="720" alt="The same passage quoted back in the response letter, with its real page number">
 </p>
 
+By default `response.pdf` only comes from the first compile, so it always cites the *clean* manuscript's pages — even for a reviewer who actually reads `manuscript-tracked.pdf`. Pass `letter: true` to `revisions()` and the second compile produces its own letter too, `response-tracked.pdf`, citing the tracked manuscript's own pagination and quoting its real tracked wording:
+
+```typ
+#show: revisions.with(
+  template: my-journal-template.with(title: [...], authors: (...)),
+  exchanges: include "responses.typ",
+  letter: true,
+)
+```
+
+Same two commands as above — the second one now also writes `response-tracked.pdf` next to `manuscript-tracked.pdf`:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/revisions-letter-option/response-tracked.png" width="720" alt="A response letter produced by the tracked compile, quoting the manuscript's own struck-and-underlined tracked wording">
+</p>
+
 ## A gallery of what's built in
 
 **Three ways to mark a change** — `style: "inline"` (underline/strike in the flow of text, the default), `style: "bar"` (a colored change-bar), or `style: "none"` (a layout sanity check — renders exactly like the clean version even when tracked):
