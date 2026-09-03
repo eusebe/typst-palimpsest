@@ -9,4 +9,4 @@ keywords = ["revision", "peer review", "rebuttal", "manuscript", "response lette
 compiler = "0.15.0"
 categories = ["academic"]
 repository = "https://github.com/eusebe/typst-palimpsest"
-exclude = ["tests", "mockup", "CLAUDE.md", "*.pdf", "**/*.pdf", "**/*.png", ".gitignore", ".DS_Store"]
+exclude = ["tests", "mockup", "CLAUDE.md", "palimpsest-specification.md", "*.pdf", "**/*.pdf", "**/*.png", ".gitignore", ".DS_Store"]
