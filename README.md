@@ -163,10 +163,6 @@ Four complete, working projects live under [`examples/`](examples/):
 
 Each ships its own `compile.sh`.
 
-## Status
-
-Pre-release (v0.1) — not yet published to the Typst Universe. The feature set described above is implemented and tested against every example in this repository. 
-
 ## License
 
 MIT
