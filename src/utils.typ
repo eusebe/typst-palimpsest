@@ -140,57 +140,138 @@
   walk(body)
 }
 
+/// Walks `body` structurally (same recursion shape as `collect-labels`,
+/// above) to find which numbered element kinds it actually contains —
+/// `heading`, and `figure` broken down by `image`/`table`/`raw` kind
+/// (inferred from the figure's own `body` field, same inference Typst
+/// itself uses and the same one `mark-figure-body` has to redo
+/// explicitly after crossing), plus `math.equation`. Used by
+/// `neutralize-numbering` (`marks.typ`) to snapshot/restore only the
+/// counters a given deletion actually touches, instead of all five
+/// unconditionally on every single deletion — not just an optimization:
+/// verified directly that touching all five regardless of content, with
+/// enough mixed deletions stacked in one document (several headings,
+/// figures, tables, and equations all deleted), makes Typst's layout
+/// solver fail to converge within its default five attempts ("document
+/// did not converge" — reproduced with `tests/bundle-numbering-restore.typ`,
+/// which needed all four kinds deleted together to trigger it; any
+/// three alone converged fine, isolating the cause to the sheer volume
+/// of stacked, unconditional counter reads/writes rather than any one
+/// kind in particular).
+#let no-kinds = (heading: false, image: false, table: false, raw: false, equation: false)
+
+#let numbered-kinds-in(body) = {
+  // Typst closures can't mutate a captured variable (verified directly
+  // — "variables from outside the function are read-only"), so this
+  // combines results by *returning and OR-ing* them, the same shape
+  // `collect-labels` (above) already uses for the same reason, rather
+  // than accumulating into a shared dict from inside `walk` the way an
+  // first draft of this function tried and failed to compile.
+  let or-kinds = (a, b) => (
+    heading: a.heading or b.heading,
+    image: a.image or b.image,
+    table: a.table or b.table,
+    raw: a.raw or b.raw,
+    equation: a.equation or b.equation,
+  )
+  let walk(node) = {
+    let t = type(node)
+    if t == content {
+      let f = node.func()
+      let own = if f == heading {
+        (..no-kinds, heading: true)
+      } else if f == math.equation {
+        (..no-kinds, equation: true)
+      } else if f == figure {
+        let b = node.fields().at("body", default: none)
+        let bf = if type(b) == content { b.func() } else { none }
+        if bf == table {
+          (..no-kinds, table: true)
+        } else if bf == raw {
+          (..no-kinds, raw: true)
+        } else {
+          (..no-kinds, image: true)
+        }
+      } else {
+        no-kinds
+      }
+      node.fields().values().fold(own, (acc, v) => {
+        let t2 = type(v)
+        if t2 == content {
+          or-kinds(acc, walk(v))
+        } else if t2 == array {
+          v.fold(acc, (acc2, x) => if type(x) == content { or-kinds(acc2, walk(x)) } else { acc2 })
+        } else {
+          acc
+        }
+      })
+    } else if t == array {
+      node.fold(no-kinds, (acc, x) => or-kinds(acc, walk(x)))
+    } else {
+      no-kinds
+    }
+  }
+  walk(body)
+}
+
 /// Recursively reconstructs `node` with every label removed —
 /// `pinpoint(excerpt: true)` runs this on a passage's stored content
-/// before re-emitting it into the letter, so a figure/table/equation
-/// the passage adds can be *shown*, not just cited by page, even though
-/// its label is also the target of a real `@ref` elsewhere in the
-/// bundle (§6quinquies/§6septies): the copy in the letter no longer
-/// carries that label, so citing it anywhere still resolves
+/// before re-emitting it into the letter, so a figure/table/equation/
+/// heading the passage adds can be *shown*, not just cited by page,
+/// even though its label is also the target of a real `@ref` elsewhere
+/// in the bundle (§6quinquies/§6septies): the copy in the letter no
+/// longer carries that label, so citing it anywhere still resolves
 /// unambiguously to the one true original in the manuscript (verified
 /// directly, including with an `@ref` sitting inline right next to the
 /// stripped copy).
 ///
-/// A `figure` or a labelled block `math.equation` that still has its
-/// original label at the point this runs gets one more thing done to
-/// it before that label is dropped: `query(lbl)` finds the true,
-/// already-shown manuscript original (the copy being built right now
-/// doesn't exist yet, so this can't resolve to itself), and its real,
-/// resolved number is pinned onto the reconstructed copy's
-/// `numbering:` field as a literal value (`(..) => real-number`). A
-/// local `numbering:` always wins over whatever `set figure(numbering:
-/// ...)`/`set math.equation(numbering: ...)` is active where the copy
-/// is re-emitted — normally the letter's own independent "R" sequence
-/// for a figure (`with-letter-numbering`, `letter.typ`) — so a figure
-/// or equation the letter quotes shows the *same* number it has in the
-/// manuscript ("Figure 2"/"Equation 3" in both places) instead of a
-/// letter-local one ("Figure 2" in the manuscript, "Figure R1" in the
-/// letter) that gave no hint the two were the same element. The two
-/// element types need different fields to compute that real number,
-/// which is the only reason they're not handled by one shared branch:
-/// a `figure` synthesizes its own `.counter` once shown (scoped to its
-/// `kind`, so it already reads the right one whatever that kind is);
-/// `math.equation` does not synthesize one, so `counter(math.equation)`
-/// — the one, ungrouped counter every equation shares (verified
-/// directly, no `kind`-style filtering exists for equations the way it
-/// does for figures) — has to be read explicitly instead. Skipped,
+/// A `figure`, a labelled block `math.equation`, or a labelled
+/// `heading` that still has its original label at the point this runs
+/// gets one more thing done to it before that label is dropped:
+/// `query(lbl)` finds the true, already-shown manuscript original (the
+/// copy being built right now doesn't exist yet, so this can't resolve
+/// to itself), and its real, resolved number is pinned onto the
+/// reconstructed copy's `numbering:` field as a literal value (`(..) =>
+/// real-number`). A local `numbering:` always wins over whatever `set
+/// figure(numbering: ...)`/`set math.equation(numbering:
+/// ...)`/`set heading(numbering: ...)` is active where the copy is
+/// re-emitted — normally the letter's own independent "R" sequence for
+/// a figure (`with-letter-numbering`, `letter.typ`) — so a figure,
+/// equation, or heading the letter quotes shows the *same* number it
+/// has in the manuscript ("Figure 2"/"Equation 3"/"2.1" in both places)
+/// instead of a letter-local one ("Figure 2" in the manuscript, "Figure
+/// R1" in the letter) that gave no hint the two were the same element.
+/// The three element types need different fields to compute that real
+/// number, which is the only reason they're not handled by one shared
+/// branch: a `figure` synthesizes its own `.counter` once shown (scoped
+/// to its `kind`, so it already reads the right one whatever that kind
+/// is); `math.equation` and `heading` don't synthesize one, so
+/// `counter(math.equation)`/`counter(heading)` — the one, ungrouped
+/// counter every equation shares, and likewise the one counter that
+/// already returns a heading's full "2.1"-style array regardless of
+/// level (verified directly, no per-level split the way `figure` has a
+/// per-`kind` one) — have to be read explicitly instead. Skipped,
 /// falling through to whatever numbering already applies, whenever
-/// there's nothing to pin: no label, the label doesn't resolve
-/// anywhere (a figure/equation the *letter* itself adds, never in the
-/// manuscript at all), or the original's own `numbering` is `none` (a
-/// deleted figure shown in the tracked manuscript with
-/// `del-numbering: "none"` freezing its number, §7.3 — `numbering(none,
-/// ..)` is a hard Typst error, not a case to recover from after the
-/// fact; a deleted figure/equation also has no label to resolve in the
-/// *clean* manuscript at all, since `del()` emits nothing there, so
-/// this mostly matters for `pinpoint(mode: "tracked")` excerpts). An
-/// *inline* equation is covered by the same branch as a block one —
+/// there's nothing to pin: no label, the label doesn't resolve anywhere
+/// (a figure/equation/heading the *letter* itself adds, never in the
+/// manuscript at all), or the original's own `numbering` is `none`
+/// (some future case setting it directly — not `del-numbering: "none"`
+/// itself, which since `neutralize-numbering` (`marks.typ`) switched
+/// from blanking numbering to snapshotting/restoring the counter no
+/// longer sets a deleted element's own `numbering` to `none` at all; a
+/// deleted figure/equation/heading keeps its real, resolved numbering
+/// and is pinned just like a kept one — this guard is now mostly
+/// theoretical, kept because `numbering(none, ..)` is still a hard
+/// Typst error if it's ever `none` for any other reason). An *inline*
+/// equation is covered by the same branch as a block one —
 /// `math.equation`'s `.numbering` field and the shared counter work
 /// identically either way — but an inline equation is rarely labelled
-/// or numbered in practice, so this is mostly untested territory.
-/// `heading` is not covered — no request to number a quoted heading
-/// like a manuscript section number yet, and headings don't carry a
-/// `kind`-scoped counter the way figures do either.
+/// or numbered in practice, so this is mostly untested territory. A
+/// `heading` is, in the same sense, rarely labelled at all outside of
+/// this use case — the gain only shows up for a heading the author
+/// specifically labels so it can be quoted with its real section
+/// number; an unlabelled one (the common case) just stays unnumbered in
+/// the letter, as before.
 ///
 /// Doesn't change how many counter slots a re-emitted figure consumes
 /// — it still advances whichever kind-scoped counter is active where
@@ -240,17 +321,25 @@
       })
     }
     let ctor = node.func()
-    if ctor == figure or ctor == math.equation {
+    if ctor == figure or ctor == math.equation or ctor == heading {
       let lbl = f.at("label", default: none)
       if lbl != none {
         let hits = query(lbl)
         if hits.len() > 0 {
           let orig = hits.first()
           if orig.numbering != none {
+            // `figure` synthesizes its own `.counter` once shown, scoped
+            // to its `kind`. `math.equation` and `heading` don't — both
+            // share one, plain, ungrouped counter apiece (`heading`'s
+            // isn't scoped by level either: `counter(heading)` alone
+            // already returns the full "2.1"-style array, verified
+            // directly), so both read the same generic counter directly.
             let cval = if ctor == figure {
               orig.counter.at(orig.location())
-            } else {
+            } else if ctor == math.equation {
               counter(math.equation).at(orig.location())
+            } else {
+              counter(heading).at(orig.location())
             }
             let real-number = numbering(orig.numbering, ..cval)
             new-f.insert("numbering", (..) => real-number)
@@ -345,13 +434,66 @@
 /// simpler cases that motivated `cross` in the first place (all
 /// verified in `tests/strike-methods.typ`, case F.9's note and
 /// F.9–F.11).
+///
+/// `kind` is also removed and recomputed explicitly, from `b` — the
+/// original, uncrossed body — rather than left for Typst to re-infer on
+/// the reconstructed figure: `cross(b)` wraps `b` in a `box`, and a
+/// figure's automatic kind inference only recognizes a body whose own
+/// `.func()` is directly `table`/`raw` (falling back to `image`
+/// otherwise) — a `box` matches neither, so a crossed *table* was
+/// silently mis-inferred as `kind: image` and captioned/counted as a
+/// "Figure" instead of a "Table". Invisible as long as a deleted
+/// figure's number was hidden outright (`neutralize-numbering`'s old
+/// `numbering: none` approach); surfaced once that changed to keep the
+/// real number visible (`neutralize-numbering` now restores counters
+/// instead of blanking them) — verified directly, see
+/// `docs/manual-snippets/style-del-numbering-none.typ`'s tracked
+/// output before this fix ("Figure 3: Removed table" under a plain,
+/// non-custom template). Doesn't affect *which* counter actually
+/// advances at layout time if this inference is still somehow wrong for
+/// some future body shape — `neutralize-numbering` restores every
+/// kind-scoped counter unconditionally, so a subsequent real figure's
+/// own number was never at risk, only this element's own caption.
 #let mark-figure-body(fig) = {
   let f = fig.fields()
   let b = f.remove("body")
   let lbl = f.remove("label", default: none)
   let _ = f.remove("counter", default: none)
-  let new-fig = fig.func()(cross(b), ..f)
+  let _ = f.remove("kind", default: none)
+  let kind = if b.func() == table { table } else if b.func() == raw { raw } else { image }
+  let new-fig = fig.func()(cross(b), kind: kind, ..f)
   if lbl != none { [#new-fig#lbl] } else { new-fig }
+}
+
+/// Reconstructs a *block* `math.equation` with only its `body` field
+/// crossed out — same shape and same underlying reason as
+/// `mark-figure-body`, above. An earlier version crossed the *whole*
+/// numbered equation directly (`cross(eq)`, `eq` still carrying its own
+/// `numbering:`): `cross`'s `measure(body)` only ever returns an
+/// element's tight, intrinsic size — for a numbered equation, that
+/// collapses back down to just the width of its glyphs, discarding the
+/// full-page-width, number-pushed-to-the-margin layout Typst's own
+/// equation-numbering machinery gives a *normally* placed numbered
+/// equation. The reconstructed box ended up exactly as wide as "E =
+/// mc²" alone, squeezing the equation's real number right up against
+/// it instead of at the margin — verified directly, reproduced with a
+/// bare `#set math.equation(numbering: ...)` equation measured and
+/// re-boxed, no palimpsest involved. Crossing only `body` avoids this:
+/// `cross` only ever measures the bare math glyphs (always meant to be
+/// tightly boxed), while the surrounding `math.equation` — reconstructed
+/// with its `numbering`/`block` fields untouched — gets Typst's native,
+/// full-width, right-justified numbering layout exactly like a kept or
+/// added equation, centering itself the same way any block equation
+/// natively does. The caller no longer needs its own `align(center,
+/// block(...))` wrapper for this (removed): that wrapper only ever
+/// existed to recenter a box that had collapsed to its tight size, not
+/// something a *correctly*-sized reconstructed equation needs.
+#let mark-equation-body(eq) = {
+  let f = eq.fields()
+  let b = f.remove("body")
+  let lbl = f.remove("label", default: none)
+  let new-eq = eq.func()(cross(b), ..f)
+  if lbl != none { [#new-eq#lbl] } else { new-eq }
 }
 
 /// `del`'s default visual mark (`style.typ`'s `default-style.del-style`):
@@ -376,7 +518,7 @@
   if type(body) != content {
     body
   } else if body.func() == math.equation and body.at("block", default: false) {
-    align(center, block(cross(body)))
+    mark-equation-body(body)
   } else if body.func() == math.equation {
     strike-b(body)
   } else if body.func() == figure {

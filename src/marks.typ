@@ -1,4 +1,4 @@
-#import "utils.typ": collect-metadata, normalize-anchors, current-passage-anchors, render-mode-override, in-excerpt, strip-labels, parse-anchor
+#import "utils.typ": collect-metadata, normalize-anchors, current-passage-anchors, render-mode-override, in-excerpt, strip-labels, parse-anchor, numbered-kinds-in
 #import "style.typ": style-state, anchors-color, neutral-color, del-color
 #import "diagnostics.typ": diagnose
 
@@ -42,15 +42,73 @@
   }
 }
 
-/// Suppresses figure/equation numbering inside deleted content shown in
-/// tracked mode, so clean and tracked versions keep identical numbering
-/// (§7.3). No-op when `del-numbering: "keep"`.
-#let neutralize-numbering(body) = context {
+/// Keeps figure/table/equation/heading numbering in deleted content
+/// shown in tracked mode from disturbing anything that comes after it,
+/// so clean and tracked versions keep identical numbering (§7.3) —
+/// while still letting the deleted element show its own real number
+/// (struck through), rather than hiding it. Snapshots every relevant
+/// counter right before `body`, lets `body` render normally (so a
+/// deleted figure/heading/equation still consumes and displays its true
+/// number, exactly as it would if kept), then resets each counter back
+/// to its snapshot right after — an absolute restore, not a per-element
+/// decrement, so it stays correct no matter how many numbered elements
+/// `body` contains or how they're nested (a deleted top-level section
+/// that itself contains a deleted subsection and a deleted figure, all
+/// in one `del(...)`, restores correctly in one shot: verified directly,
+/// see the exploration notes below). Figures are reset per `kind`
+/// (`image`/`table`/`raw`, the same three `with-letter-numbering`,
+/// `letter.typ`, already resets) since Typst scopes a figure's real
+/// displayed number to a kind-specific counter, not the bare
+/// `counter(figure)` (§6quaterquadragies-class distinction, verified
+/// directly). `math.equation` has no such per-kind split — one shared
+/// counter for every equation.
+///
+/// Also verified directly against `@preview/charged-ieee`, which
+/// reimplements figure numbering via its own show rule and used to
+/// crash outright on `numbering: none` (the previous approach here):
+/// with a real number left in place and only the counter restored
+/// afterward, it neither crashes nor leaks — the show rule reads the
+/// same counter this restores, so it renders the correct number too.
+/// `suppress`/`suppressed` remain the answer when the deleted content
+/// itself shouldn't be shown at all, not merely mis-numbered.
+///
+/// No-op when `del-numbering: "keep"` — the deleted element consumes a
+/// real, unrestored number and everything after it shifts, on purpose.
+///
+/// Only snapshots/restores the counters actually present in the
+/// *original, unwrapped* content — `kinds`, from `numbered-kinds-in`
+/// (`utils.typ`), computed by the caller (`del`/`rep`) from the raw
+/// body *before* it's passed through `mark-visual` — not all five
+/// unconditionally. Two independent reasons, found in this order:
+/// first, correctness at scale — touching every counter on every
+/// deletion regardless of content overloads Typst's layout solver once
+/// several mixed deletions stack up in one document (see
+/// `numbered-kinds-in`'s docstring for the reproduction). Second, and
+/// more fundamental: `kinds` *cannot* be computed from `body` as
+/// received here, because by the time `del`/`rep` call this function
+/// `body` is already `mark-visual(...)`'s output — a `context` value,
+/// structurally opaque like any other, so a first attempt at detecting
+/// kinds internally, from this parameter, silently found nothing every
+/// time and disabled every restore unconditionally instead of only the
+/// unnecessary ones (verified directly, caught by re-checking actual
+/// rendered numbers after the "no convergence warning" result looked
+/// like success — the warning was gone only because nothing was being
+/// restored *at all* any more, not because the restores had become
+/// correctly selective).
+#let neutralize-numbering(body, kinds) = context {
   let sty = style-state.get()
   if sty.del-numbering == "none" {
-    [#set math.equation(numbering: none)
-     #set figure(numbering: none)
-     #body]
+    let snap-heading = if kinds.heading { counter(heading).get() }
+    let snap-image = if kinds.image { counter(figure.where(kind: image)).get() }
+    let snap-table = if kinds.table { counter(figure.where(kind: table)).get() }
+    let snap-raw = if kinds.raw { counter(figure.where(kind: raw)).get() }
+    let snap-equation = if kinds.equation { counter(math.equation).get() }
+    body
+    if kinds.heading { counter(heading).update(snap-heading) }
+    if kinds.image { counter(figure.where(kind: image)).update(snap-image) }
+    if kinds.table { counter(figure.where(kind: table)).update(snap-table) }
+    if kinds.raw { counter(figure.where(kind: raw)).update(snap-raw) }
+    if kinds.equation { counter(math.equation).update(snap-equation) }
   } else {
     body
   }
@@ -81,7 +139,14 @@
     if effective-mode() == "clean" {
       none
     } else {
-      neutralize-numbering(mark-visual("del", body))
+      // `numbered-kinds-in` must see the *raw* body, before
+      // `mark-visual` wraps it in its own `context` block — a context
+      // value is structurally opaque, so computing kinds from
+      // `mark-visual`'s output instead (tried first) silently found
+      // nothing every time, disabling the counter restore below for
+      // every kind, always — verified directly, see
+      // `neutralize-numbering`'s docstring.
+      neutralize-numbering(mark-visual("del", body), numbered-kinds-in(body))
     }
   }
 }
@@ -102,7 +167,7 @@
       if sty.style == "none" {
         new
       } else {
-        [#neutralize-numbering(mark-visual("del", old)) #mark-visual("add", new)]
+        [#neutralize-numbering(mark-visual("del", old), numbered-kinds-in(old)) #mark-visual("add", new)]
       }
     }
   }
