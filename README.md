@@ -31,10 +31,10 @@ Palimpsest is *not* a diff tool (marking what changed is explicit), *not* a temp
 
 ## Installation
 
-Not yet published to the Typst Universe. Import it by path for now:
+Import the package from the Typst Universe:
 
 ```typ
-#import "path/to/palimpsest/lib.typ": *
+#import "@preview/palimpsest:0.1.0": *
 ```
 
 Requires **Typst 0.15** or later, specifically its `--features bundle` export (still experimental — Typst prints a warning about this on every compile, which is expected).
@@ -52,7 +52,7 @@ main.typ          the pilot (a handful of lines)
 `manuscript.typ` — mark changes inline, anchored to the comment they answer:
 
 ```typ
-#import "palimpsest/lib.typ": *
+#import "@preview/palimpsest:0.1.0": *
 
 #passage(<r1-2>)[
   Propensity scores were estimated by logistic regression
@@ -63,7 +63,7 @@ main.typ          the pilot (a handful of lines)
 `responses.typ` — write the reply, and let `pinpoint` cite the manuscript for you:
 
 ```typ
-#import "palimpsest/lib.typ": *
+#import "@preview/palimpsest:0.1.0": *
 
 #reviewer(1)[
   #exchange(<r1-2>)[
@@ -77,7 +77,7 @@ main.typ          the pilot (a handful of lines)
 `main.typ` — wire the manuscript to your journal's template and the responses to a letter:
 
 ```typ
-#import "palimpsest/lib.typ": *
+#import "@preview/palimpsest:0.1.0": *
 
 #show: revisions.with(
   template: my-journal-template.with(title: [...], authors: (...)),

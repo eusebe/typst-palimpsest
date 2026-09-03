@@ -44,9 +44,9 @@
 
 = Installation and compiling
 
-Not yet published to the Typst Universe --- import by path:
+Import the package from the Typst Universe:
 
-#code("#import \"path/to/palimpsest/lib.typ\": *")
+#code("#import \"@preview/palimpsest:0.1.0\": *")
 
 A full project (manuscript, tracked manuscript, response letter) compiles with two commands:
 
@@ -659,7 +659,7 @@ Four parameters:
 / `exchanges`: the already-evaluated content of the responses file --- `include "responses.typ"`, as shown above. Also decides whether a letter is produced at all --- see below.
 / `strict`: `revisions(strict: true, ...)` is shorthand for `set-strict(true)` at the top of the pilot.
 
-Each source file needs its own `#import "palimpsest/lib.typ": *` --- `#include` doesn't share scope, so `manuscript.typ` and `responses.typ` both import it too, even though only `main.typ` calls `revisions`.
+Each source file needs its own `#import "@preview/palimpsest:0.1.0": *` --- `#include` doesn't share scope, so `manuscript.typ` and `responses.typ` both import it too, even though only `main.typ` calls `revisions`.
 
 == The letter, automatically --- matched to the manuscript you actually send <sec-letter-option>
 
