@@ -84,7 +84,7 @@ Two things to notice: `add` shows nothing extra in clean mode --- `body` is just
 
 #shot("manual-snippets/marks-suppress/result-tracked.png")
 
-The obvious question is why this exists next to `del`, which already hides its content in clean mode. The difference shows up specifically in the *tracked* manuscript: `del` still renders the real removed content there --- struck through, as the previous section demonstrated --- and for a figure, table, or equation, that real content is a real numbered element, which some templates' own numbering machinery can mishandle (the previous chapter's equation, struck-through-that-isn't, is a milder version of the same class of problem). `suppress` never emits a real figure/table/equation at all --- only `note` --- so there's nothing for any template to miscount, at the cost of the tracked manuscript no longer showing what was actually there.
+The obvious question is why this exists next to `del`, which already hides its content in clean mode. The difference shows up specifically in the *tracked* manuscript: `del` still renders the real removed content there --- struck through, as the previous section demonstrated. Sometimes that's not what you want: a long passage struck through end to end reads worse than a short note saying what used to be there, or the removed content simply isn't worth showing again once it's gone. `suppress` replaces it with `note` instead --- centered, italic, shown only in tracked mode --- rather than the real thing, struck.
 
 `suppress` takes no content to hide, only `note` --- there's no parameter for the real content at all, not even an unused one. Since that content is never rendered by this function, in any mode, keeping it as an argument would only be a place for some future edit to start rendering it by accident, undoing the whole point.
 
@@ -147,7 +147,7 @@ The `[R1-2]` superscript at the end of a marked passage --- what reviewers use m
 
 === `del-numbering`
 
-A figure, table, or equation that gets deleted still exists as a real element in the tracked manuscript --- and by default would still consume a number, shifting every figure that comes after it out of sync with the clean version. `del-numbering: "none"` (the default) freezes the deleted element's number instead, so the *next* real figure keeps the same number in both versions:
+A figure, table, equation, or heading that gets deleted still exists as a real element in the tracked manuscript --- and by default would still consume a number, shifting every one of its kind that comes after it out of sync with the clean version. `del-numbering: "none"` (the default) keeps the deleted element's own real number visible, struck through, but resets the count right after it, so the *next* real one of that kind keeps the same number in both versions:
 
 #code-of("manual-snippets/style-del-numbering-none.typ")
 
@@ -159,7 +159,7 @@ The *clean* compile of that same source, for comparison --- the numbers match:
 
 #shot("manual-snippets/style-del-numbering-none/result-clean.png")
 
-`"keep"` lets a deleted figure consume a number like anything else --- rarely what you want (the whole point of `del-numbering: "none"` above is that a reviewer reading the tracked manuscript and citing "Figure 3" is citing the same Figure 3 that exists in the clean version you submit), but available:
+`"keep"` lets a deleted element consume a number like anything else --- rarely what you want (the whole point of `del-numbering: "none"` above is that a reviewer reading the tracked manuscript and citing "Figure 3" is citing the same Figure 3 that exists in the clean version you submit), but available:
 
 #code-of("manual-snippets/style-del-numbering-keep.typ")
 
@@ -171,7 +171,9 @@ The *clean* compile of that same source --- watch the third and fifth figures' n
 
 #shot("manual-snippets/style-del-numbering-keep/result-clean.png")
 
-Both examples also include a table and an equation, deleted the same way, worth looking at closely: the table's cells and caption are struck through, same as ordinary text, and its diagonal cross covers the drawing itself. The equation gets the same diagonal cross rather than a strikethrough (see `del-style` above for why) --- and, like the figure and the table, keeps its own number frozen under `del-numbering: "none"` so the equations around it stay in sync with the clean version, or consumes a real number under `"keep"`, exactly the same freeze/consume distinction shown above for figures and tables. A deleted equation still doesn't need `suppress` for this reason alone; `suppress` (above) remains the answer for a template whose figure/table numbering ignores `del-numbering: "none"` outright (see the note further below), a problem specific to how some templates recompute figure/table numbers, not to equations.
+Both examples also include a table, an equation, and a heading, deleted the same way, worth looking at closely: the table's cells and caption are struck through, same as ordinary text, and its diagonal cross covers the drawing itself. The equation gets the same diagonal cross rather than a strikethrough (see `del-style` above for why), and the heading is struck like any other text. All three keep their own number visible, frozen under `del-numbering: "none"` so whatever comes after them stays in sync with the clean version, or consume a real number under `"keep"`, exactly the same freeze/consume distinction shown above for figures.
+
+This works the same way under a template that recomputes its own figure or table numbers via a custom show rule --- `@preview/charged-ieee`, for instance --- since the underlying counter it reads is the same one being frozen here.
 
 == Adding or removing a whole table row or column <sec-table-rows>
 
@@ -264,24 +266,6 @@ Still colored and tagged like any other passage --- just nothing struck or under
 #shot("manual-snippets/shortcuts-suppressed/result-tracked.png")
 
 `note` and `summary:` are separate parameters on purpose. `note` has to read on its own, cold, in the middle of the manuscript --- "Equation removed: ...". `summary:` is inserted into a sentence the *letter* will already have written --- "Removed: `‹summary›`" --- so it should be a bare phrase, not repeat "removed" itself. `summary:` defaults to `note` when omitted, since most of the time the two don't need to differ; the second call above gives them separately.
-
-== Deleting a numbered figure under a template with its own numbering
-
-`suppress`/`suppressed`, above, exist because of a real limitation: some templates --- `charged-ieee` is a real example --- reimplement figure numbering with their own show rule, which doesn't cooperate with `del-numbering: "none"` --- deleting a real `figure(...)` under one of these can leak a visible number onto the deleted figure, and even shift the numbers of every figure that follows it. `suppressed` sidesteps the whole problem by never emitting a real `figure()` at all --- but it also never shows the original content, only a note.
-
-When the deleted figure is short and worth keeping visible --- not replaced by a note --- skip `figure()` entirely instead: a plain block with the image and a hand-written caption never reaches the template's numbering machinery, because `del`'s automatic styling only special-cases a genuine `figure`/`table`/`math.equation`.
-
-#code-of("manual-snippets/deleted-figure-workaround.typ")
-
-Clean:
-
-#shot("manual-snippets/deleted-figure-workaround/result-clean.png")
-
-Tracked:
-
-#shot("manual-snippets/deleted-figure-workaround/result-tracked.png")
-
-Figures 1 and 2 keep their real numbers on both sides --- no leak, no shift. The trade-off: `del`'s automatic styling (desaturated color, strike) only decorates *text*, so the hand-written caption is struck and colored like any other deleted text, but the image itself isn't crossed out the way a genuinely deleted `figure()` is under a template with native numbering (previous chapter). Worth it whenever keeping the real content visible matters more than the missing cross mark; `examples/emoji-email/` uses this for exactly that reason, with an author note explaining why.
 
 = Anchors: reviewer, editor, author
 
@@ -583,7 +567,7 @@ A real project's three-file shape (`main.typ`/`manuscript.typ`/`responses.typ`, 
 
 A figure or table the letter adds *on its own* --- "for the reviewer's convenience only," never in the manuscript, like the table above --- is numbered independently from the manuscript's, prefixed `R`, so it can never be confused with a manuscript one.
 
-A figure or table `pinpoint(excerpt: true)` re-emits *from* the manuscript is different: it keeps the manuscript's own real number, not an `R` one --- "Figure 1" reads "Figure 1" in the letter too, not "Figure R1":
+A figure, table, equation, or heading `pinpoint(excerpt: true)` re-emits *from* the manuscript is different: it keeps the manuscript's own real number, not an `R` one --- "Figure 1" reads "Figure 1" in the letter too, not "Figure R1", and a quoted subsection heading reads "2.1" the same way it does in the manuscript:
 
 #code-of("manual-snippets/letter-numbering.typ")
 
@@ -595,9 +579,9 @@ Response:
 
 #shot("manual-snippets/letter-numbering/response-clean.png")
 
-The letter's own figure above is captioned "Figure R2," not "Figure R1" --- the excerpt before it still occupies the first slot of the letter's own counter, even though what it *displays* is the manuscript's number rather than that slot's. Already true before either was ever matched to the manuscript (an excerpt has always advanced the letter's counter); the only thing that changed is what a matched excerpt shows on the page.
+The letter's own figure above is captioned "Figure R2," not "Figure R1" --- the two excerpts before it (the figure and the heading) still occupy the first two slots of the letter's own counters, even though what each *displays* is the manuscript's own number rather than that slot's.
 
-The same matching applies to a numbered equation `pinpoint(excerpt: true)` re-emits: it keeps the manuscript's own equation number too, not a letter-local one --- equations have no `R`-prefixed sequence of their own to fall back to in the first place.
+This requires a label on the original --- `query()` is how the letter's copy finds the manuscript's real number, and a label is what it queries by. An unlabelled figure, equation, or heading just falls back to whatever numbering already applies where the excerpt is re-emitted --- the letter's own `R` sequence for a figure or table, no `R` sequence at all for an equation (equations never had one), and no number at all for a heading. This matters most in practice for headings: a figure is usually labelled anyway, for `@ref`, but a heading rarely is unless an author adds one specifically so it can be quoted this way.
 
 = Diagnostics and strict mode
 

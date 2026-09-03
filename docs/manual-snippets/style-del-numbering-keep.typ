@@ -3,9 +3,12 @@
 #set page(width: 16.6cm, height: auto, margin: 12pt)
 #set text(size: 10.5pt)
 #set math.equation(numbering: "(1)")
+#set heading(numbering: "1.1.")
 #set-revisions(require-exchange: false, del-numbering: "keep")
 
 *del-numbering: "keep"*
+
+= Methods
 
 #figure(rect(width: 2cm, height: 1cm, fill: luma(230)), caption: [Kept figure.]) <fig-d>
 #passage(<x4>)[
@@ -24,3 +27,12 @@ Kept equation. $ a = b $ <eq-a-kept-b>
   #del[$ E = m c^2 $ <eq-b>]
 ]
 Next equation --- number has shifted, diverging from the clean version. $ c = d $ <eq-c-kept-b>
+
+== Kept subsection.
+#passage(<x8>)[
+  #del[
+    == Removed subsection --- still consumes a number here.
+    Removed content.
+  ]
+]
+== Next subsection --- number has shifted, diverging from the clean version.

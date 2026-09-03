@@ -213,9 +213,9 @@ corresponding change cited by page number in the manuscript.
 
 == Author notes
 
-The changes above address every reviewer and editor comment. Three
+The changes above address every reviewer and editor comment. Two
 further, smaller notes are recorded here for transparency, even though
-none of them answers a specific reviewer comment.
+neither answers a specific reviewer comment.
 
 #author("marcus")[
 
@@ -225,22 +225,6 @@ none of them answers a specific reviewer comment.
     added a note confirming adequate overlap.
 
     #pinpoint(<marcus-1>, excerpt: true)
-  ]
-
-  #note(<marcus-2>)[
-    A technical note for anyone reusing this project with a different
-    journal template: the reply-latency table removed per
-    #xcomment(<r2-7>) is kept visible in the tracked manuscript rather
-    than collapsed to a note, unlike the two sub-analyses above. That's
-    only safe because it's built as a plain block with a hand-written
-    caption instead of a real `figure()` --- `charged-ieee`
-    reimplements figure numbering with its own show rule, which leaks
-    a visible number onto a genuinely deleted figure and shifts every
-    figure number after it. `suppressed()` sidesteps this by never
-    building a real figure at all, at the cost of hiding the original
-    content; this table needed to stay legible instead. See
-    `docs/manual.typ`, "Deleting a numbered figure under a template
-    with its own numbering", for the general pattern.
   ]
 
 ]

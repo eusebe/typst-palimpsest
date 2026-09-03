@@ -24,7 +24,7 @@ Palimpsest is *not* a diff tool (marking what changed is explicit), *not* a temp
 - **Real cross-references, not copy-pasted page numbers.** `pinpoint(<anchor>)` reports the manuscript's actual, current page — `xref`/`xcomment` resolve figures, tables, and other comments the same way. Nothing to update by hand after a last-minute edit.
 - **Quote the manuscript verbatim in the letter.** `pinpoint(<anchor>, excerpt: true)` re-emits the real passage — clean or tracked style, your choice — so the letter can never drift from what the manuscript actually says.
 - **Reviewers, editor, and co-authors, all colored and tracked.** `<r1-2>` (reviewer 1, comment 2), `<e1>` (editor), or `<bob-3>` (co-author) — each anchor kind gets its own color and its own letter section, automatically.
-- **Figure/table/equation numbering that survives tracking.** A deleted figure freezes its number instead of shifting every figure after it — the tracked manuscript and the clean one always agree on "Figure 3". (Works with Typst's native numbering — see the manual for templates that recompute figure numbers themselves.)
+- **Figure/table/equation/heading numbering that survives tracking.** A deleted element keeps its own real number, struck through, instead of leaking a shifted one onto everything after it — the tracked manuscript and the clean one always agree on "Figure 3" (or "2.1", for a section).
 - **A built-in checklist.** `change-list()` renders a table of every marked passage (comment, type of change, page, section) in the tracked manuscript — tick it off against the response letter.
 - **Diagnostics.** Orphan comments, duplicate exchanges, unanswered anchors, empty responses — flagged visibly in the tracked manuscript, or turned into hard compile errors with `strict: true` so a broken bundle can't slip through unnoticed.
 - **Works with any journal template.** `template:` accepts any `content -> content` function — swap in your actual Typst Universe template, palimpsest asks nothing more of it.
@@ -143,7 +143,7 @@ Don't want a letter for a particular run — a fast, manuscript-only preview whi
 
 ## Beyond the basics
 
-- **`suppress`/`suppressed`** — replace a deletion with a short note instead of the struck-through original, for whenever showing the real thing isn't useful (a long passage, say) or even causes trouble (some templates mis-number a deleted figure — see the manual).
+- **`suppress`/`suppressed`** — replace a deletion with a short note instead of the struck-through original, for whenever showing the real thing again isn't useful — a long passage, say.
 - **`xref`/`xcomment`** — `xref(<label>)` cites a manuscript figure/table/equation by its real number *and* page; `xcomment(<anchor>)` links to another comment in the letter itself ("as already discussed in comment R1-2").
 - **`letter-bibliography`** — a second, independently-numbered bibliography for citations the letter makes on its own, alongside the manuscript's normal one.
 - **`pinpoint(mode: "tracked" | "clean")`** — quote the *tracked* wording in an otherwise-clean letter (or vice versa), for "look, we removed exactly what you objected to."

@@ -238,28 +238,17 @@ reply increased between the 24-hour and 48-hour marks.
 
 #lorem(40)
 
-// A DELETED table that stays visible, unlike suppressed() above --
-// charged-ieee reimplements figure numbering with its own show rule,
-// which doesn't cooperate with del-numbering: "none": a real
-// figure(table(...)) deleted here would leak a visible number and
-// shift the numbers of every figure after it. Skipping figure()
-// entirely -- a plain block with the table and a hand-written caption
-// -- avoids the bug by never reaching the template's numbering
-// machinery at all. See docs/manual.typ, "Deleting a numbered figure
-// under a template with its own numbering", and the author note in
-// responses.typ explaining this to anyone adapting the project.
 #deleted(<r2-7>, summary: [the reply-latency table, redundant with @fig-reply-rate])[
-  #align(center, block[
-    #table(
+  #figure(
+    table(
       columns: 3,
       table.header[Sign-off][Median latency][IQR],
       [👍], [4.2h], [1.8--9.1h],
       [merci], [3.8h], [1.6--8.4h],
       [Control], [5.1h], [2.0--11.3h],
-    )
-    #v(0.3em)
-    #par(justify: false)[Table --- Reply latency by sign-off group (median, IQR).]
-  ])
+    ),
+    caption: [Reply latency by sign-off group (median, IQR).],
+  )
 ]
 
 #lorem(40)
