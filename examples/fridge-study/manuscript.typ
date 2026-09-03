@@ -196,40 +196,37 @@ after-hours snacking.
 
 #lorem(70)
 
-// Only the caption goes through `add()`: wrapping the whole diagram
-// would apply the add-style (underline) to every axis label and tick
-// inside it, not just the caption — fine for a plain placeholder
-// rect, but visually cluttered for a real plot. The passage's own
-// highlight box and anchor tag already mark the whole figure as new.
 #passage(<r2-2>)[
-  #figure(
-    placement: auto,
-    lq.diagram(
-      width: 7.5cm,
-      height: 4.2cm,
-      xlabel: [Odds ratio (95% CI)],
-      xlim: (0, 3),
-      yaxis: (
-        ticks: (
-          (1, "Owns a fridge\norganizer"),
-          (2, "Weekend vs.\nweekday"),
-          (3, "Lives alone"),
-          (4, "Owns a pet"),
+  #add[
+    #figure(
+      placement: auto,
+      lq.diagram(
+        width: 7.5cm,
+        height: 4.2cm,
+        xlabel: [Odds ratio (95% CI)],
+        xlim: (0, 3),
+        yaxis: (
+          ticks: (
+            (1, "Owns a fridge\norganizer"),
+            (2, "Weekend vs.\nweekday"),
+            (3, "Lives alone"),
+            (4, "Owns a pet"),
+          ),
+          lim: (0.5, 4.5),
         ),
-        lim: (0.5, 4.5),
+        lq.vlines(1, stroke: (paint: gray, dash: "dashed")),
+        lq.plot(
+          (0.8, 2.0, 1.1, 1.6),
+          (1, 2, 3, 4),
+          xerr: ((p: 0.3, m: 0.3), (p: 0.7, m: 0.6), (p: 0.6, m: 0.5), (p: 0.5, m: 0.4)),
+          stroke: none,
+          mark: "o",
+        ),
       ),
-      lq.vlines(1, stroke: (paint: gray, dash: "dashed")),
-      lq.plot(
-        (0.8, 2.0, 1.1, 1.6),
-        (1, 2, 3, 4),
-        xerr: ((p: 0.3, m: 0.3), (p: 0.7, m: 0.6), (p: 0.6, m: 0.5), (p: 0.5, m: 0.4)),
-        stroke: none,
-        mark: "o",
-      ),
-    ),
-    caption: add[Subgroup odds ratios for the association between
-    opening frequency and discovery probability.],
-  ) <fig-forest>
+      caption: [Subgroup odds ratios for the association between
+      opening frequency and discovery probability.],
+    ) <fig-forest>
+  ]
 ]
 
 #lorem(90)

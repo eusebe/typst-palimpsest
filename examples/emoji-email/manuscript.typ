@@ -163,39 +163,37 @@ senders who wrote "merci" or used no sign-off.
 
 #lorem(70)
 
-// Only the caption goes through `add()`: wrapping the whole lilaq
-// diagram in `add()` would underline every axis label and tick inside
-// it, not just the caption. The passage's own highlight box and anchor
-// tag already mark the whole figure as new.
 #passage(<r2-2>)[
-  #figure(
-    placement: auto,
-    lq.diagram(
-      width: 7.5cm,
-      height: 4.2cm,
-      xlabel: [Odds ratio, "👍" vs. "merci" (95% CI)],
-      xlim: (0, 3),
-      yaxis: (
-        ticks: (
-          (1, "CC includes\nmanager"),
-          (2, "Email length\n> 100 words"),
-          (3, "Sent on\nFriday"),
-          (4, "Recipient is\nsenior"),
+  #add[
+    #figure(
+      placement: auto,
+      lq.diagram(
+        width: 7.5cm,
+        height: 4.2cm,
+        xlabel: [Odds ratio, "👍" vs. "merci" (95% CI)],
+        xlim: (0, 3),
+        yaxis: (
+          ticks: (
+            (1, "CC includes\nmanager"),
+            (2, "Email length\n> 100 words"),
+            (3, "Sent on\nFriday"),
+            (4, "Recipient is\nsenior"),
+          ),
+          lim: (0.5, 4.5),
         ),
-        lim: (0.5, 4.5),
+        lq.vlines(1, stroke: (paint: gray, dash: "dashed")),
+        lq.plot(
+          (0.6, 1.9, 0.9, 1.4),
+          (1, 2, 3, 4),
+          xerr: ((p: 0.3, m: 0.2), (p: 0.8, m: 0.6), (p: 0.5, m: 0.4), (p: 0.6, m: 0.5)),
+          stroke: none,
+          mark: "o",
+        ),
       ),
-      lq.vlines(1, stroke: (paint: gray, dash: "dashed")),
-      lq.plot(
-        (0.6, 1.9, 0.9, 1.4),
-        (1, 2, 3, 4),
-        xerr: ((p: 0.3, m: 0.2), (p: 0.8, m: 0.6), (p: 0.5, m: 0.4), (p: 0.6, m: 0.5)),
-        stroke: none,
-        mark: "o",
-      ),
-    ),
-    caption: add[Subgroup odds ratios for the association between
-    sign-off choice and reply within 48 hours.],
-  ) <fig-forest>
+      caption: [Subgroup odds ratios for the association between
+      sign-off choice and reply within 48 hours.],
+    ) <fig-forest>
+  ]
 ]
 
 #lorem(90)
