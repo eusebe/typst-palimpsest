@@ -1,5 +1,5 @@
 #import "../../lib.typ": *
-#import "@preview/charged-ieee:0.1.3": ieee
+#import "@preview/charged-ieee:0.1.4": ieee
 
 #show: revisions.with(
   template: ieee.with(

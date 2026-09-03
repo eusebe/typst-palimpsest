@@ -1,5 +1,5 @@
 #import "../../lib.typ": *
-#import "@preview/charged-ieee:0.1.3": ieee
+#import "@preview/charged-ieee:0.1.4": ieee
 
 // A lightweight letter template, independent of the two-column IEEE
 // layout — the letter is a short reviewer-facing document, not a
