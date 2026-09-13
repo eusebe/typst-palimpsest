@@ -1,5 +1,7 @@
-#import "utils.typ": current-passage-anchors, collect-labels, render-mode-override, in-excerpt, strip-labels
-#import "diagnostics.typ": diagnose
+#import "utils.typ": current-passage-anchors, collect-labels, render-mode-override, in-excerpt, strip-labels, is-textual
+#import "../../typst-contexture/lib.typ" as contexture
+
+#let diagnose = contexture.diagnose
 
 /// True if `body` (already run through `strip-labels`) still carries a
 /// label that's the target of an actual `@ref`/`ref()` somewhere in the
@@ -60,32 +62,8 @@
   if parens { [(#core)] } else { core }
 }
 
-/// True if `body` (any Typst value) contains no `figure`, `table`, or
-/// block-mode `math.equation` at or below its own top level — decides
-/// whether an excerpt is safe to wrap in literal quotation marks
-/// (`pinpoint(..., quotes: true)`). Forcing quotation marks onto a
-/// figure produces two stray quote glyphs sitting alone above and below
-/// it, confirmed directly (`tests/bundle-pinpoint-methods.typ`, case
-/// Q.3) — not a matter of taste, a real visual defect, so `quotes:
-/// true` only ever *requests* quotation marks; this check has the final
-/// say.
-#let is-textual(body) = {
-  if type(body) != content {
-    true
-  } else {
-    let is-block-eq = body.func() == math.equation and body.at("block", default: false)
-    if body.func() == figure or body.func() == table or is-block-eq {
-      false
-    } else if repr(body.func()) == "sequence" {
-      body.children.all(is-textual)
-    } else {
-      true
-    }
-  }
-}
-
-/// `is-textual`, extended to an entire `<palimpsest-passage>` metadata
-/// value rather than a single content tree. Needed because `v.raw-body`
+/// `is-textual`, extended to an entire `palimpsest-passage` anchor's
+/// payload rather than a single content tree. Needed because `v.raw-body`
 /// alone under-detects: content that passes through `add`/`del`/`rep`
 /// has its *visible* copy wrapped in `context` (required for
 /// `render-mode-override`, see `marks.typ`) and is therefore
@@ -107,13 +85,13 @@
   is-textual(v.raw-body) and marks-ok
 }
 
-/// Queries the manuscript for every `passage` carrying `anchor` and
-/// renders their location — or, with `excerpt: true`, their actual
-/// content. This is the mechanism the spec (§1) calls out as the point
-/// of the whole package: cross-document `query()` inside the same
-/// bundle sees the manuscript's real page numbers and real content, so
-/// the letter can never cite a stale page or a passage that no longer
-/// reads the way the letter claims it does.
+/// Queries the manuscript for every `palimpsest-passage` anchor carrying
+/// `anchor` and renders their location — or, with `excerpt: true`, their
+/// actual content. This is the mechanism the spec (§1) calls out as the
+/// point of the whole package: cross-document `contexture.anchors()`
+/// inside the same bundle sees the manuscript's real page numbers and
+/// real content, so the letter can never cite a stale page or a passage
+/// that no longer reads the way the letter claims it does.
 ///
 /// `mode:` (§6.4) picks how an excerpt's marks render, regardless of
 /// what the *current compile* is actually doing: `auto` (default)
@@ -145,7 +123,7 @@
 /// table with only one cell modified, say), but *can't* reach a label
 /// that's part of `add`/`del`/`rep`'s own content, because their visual
 /// rendering is wrapped in `context` (needed for `render-mode-override`
-/// above) and therefore structurally opaque before layout — `in-excerpt`
+/// above) and therefore structurally opaque — `in-excerpt`
 /// (`utils.typ`), set right before re-emitting, makes each mark strip
 /// its own `body`/`old`/`new` before that wrapping ever applies, which
 /// covers the rest. Only once both have had their shot does a
@@ -185,7 +163,7 @@
   mode: auto,
   on-empty: auto,
 ) = context {
-  let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+  let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
 
   if hits.len() == 0 {
     if on-empty == auto {

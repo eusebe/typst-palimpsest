@@ -1,6 +1,8 @@
 #import "utils.typ": parse-anchor, is-blank
 #import "style.typ": reviewer-color, editor-color, author-color, author-display-name, style-state
-#import "diagnostics.typ": diagnose
+#import "../../typst-contexture/lib.typ" as contexture
+
+#let diagnose = contexture.diagnose
 
 /// State holding which reviewer/editor/author section an `exchange`/
 /// `note` is currently under — set by `reviewer`/`editor`/`author` before
@@ -64,8 +66,8 @@
 /// `term: auto` picks the header noun ("comment" for reviewer/editor,
 /// "change" for author) from `set-revisions(comment-word:, change-word:)`
 /// unless overridden for this one call. The *raw* `term` (possibly
-/// `auto`) is stored in the `<palimpsest-exchange>` metadata rather than
-/// the resolved word, so `xcomment` — which reads this metadata back
+/// `auto`) is stored in the `palimpsest-exchange` anchor's payload rather
+/// than the resolved word, so `xcomment` — which reads this payload back
 /// later, from a different position in the document — reproduces the
 /// same override without needing its own copy of this resolution logic.
 ///
@@ -77,7 +79,7 @@
 /// `require-exchange` (`style.typ`), which only gates the *other*
 /// direction, `passage`'s "no matching exchange" (`marks.typ`).
 #let exchange-core(anchor, comment, response, term: auto) = {
-  [#metadata((tag: "palimpsest-exchange", anchor: anchor, comment: comment, response: response, term: term)) <palimpsest-exchange>]
+  contexture.anchor("palimpsest-exchange", (anchor: anchor, comment: comment, response: response, term: term))
 
   context {
     let p = parse-anchor(anchor)
@@ -110,12 +112,12 @@
     }
 
     let bare = p != none and p.num == none
-    let siblings = query(<palimpsest-exchange>).filter(el => el.value.anchor == anchor)
+    let siblings = contexture.anchors("palimpsest-exchange").filter(el => el.value.anchor == anchor)
     let dup = if not bare and siblings.len() > 1 {
       diagnose("duplicate exchange " + str(anchor), always: true)
     }
 
-    let orphan = if not query(<palimpsest-passage>).any(el => el.value.anchors.contains(anchor)) {
+    let orphan = if not contexture.anchors("palimpsest-passage").any(el => el.value.anchors.contains(anchor)) {
       diagnose("comment " + str(anchor) + " has no matching revision in the manuscript", always: true)
     }
 
@@ -140,8 +142,8 @@
 /// positional args), *or* — for the co-author workflow, where there's no
 /// separate reviewer comment to quote — a single self-authored note (2
 /// positional args, `exchange(anchor, text)`), identical in every way to
-/// calling `note(anchor, text)` directly. Stores the exchange in a
-/// `<palimpsest-exchange>` metadata for `pinpoint`/`xcomment` and for the
+/// calling `note(anchor, text)` directly. Stores the exchange as a
+/// `palimpsest-exchange` anchor for `pinpoint`/`xcomment` and for the
 /// diagnostics in `exchange-core` above. Emits nothing in the manuscript
 /// — only ever called from the exchanges document (`responses.typ`).
 ///
@@ -181,12 +183,12 @@
 /// position where the *original* `exchange`/`note` call renders — not at
 /// whatever unrelated position calls `xcomment`. The word ("comment" vs
 /// "change", and any per-call `term:` override) comes from the target
-/// exchange's own stored metadata, so `xcomment` always echoes back
+/// exchange's own stored payload, so `xcomment` always echoes back
 /// whatever the original call actually said, never recomputing it
 /// independently. Anchors that don't parse fall back to citing the raw
 /// label instead.
 #let xcomment(anchor) = context {
-  let hits = query(<palimpsest-exchange>).filter(el => el.value.anchor == anchor)
+  let hits = contexture.anchors("palimpsest-exchange").filter(el => el.value.anchor == anchor)
   if hits.len() == 0 {
     diagnose("xcomment(" + repr(anchor) + "): no exchange found for this anchor", always: true)
   } else {

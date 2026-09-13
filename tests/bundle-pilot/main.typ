@@ -1,8 +1,9 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 
 // Stand-in for a real Universe template (arkheion, etc.) — the contract
-// `revisions` requires is just `content -> content` applied to the
-// manuscript body, which any template used with `#show:` already is.
+// `contexture.bundle` requires is just `content -> content` applied to
+// the manuscript body, which any template used with `#show:` already is.
 // Testing against real templates (arkheion, a two-column journal class,
 // a thesis class) is tracked separately, see CLAUDE.md §13.
 #let simple-template(title: none, authors: (), body) = {
@@ -16,13 +17,12 @@
   body
 }
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: simple-template.with(
     title: [Emulating a target trial of early vasopressors],
     authors: ((name: "D. H.", affiliation: "Sorbonne Université"),),
   ),
-  exchanges: include "responses.typ",
-  round: 1,
+  documents: (letter(exchanges: include "responses.typ", round: 1),),
 )
 
 #include "manuscript.typ"

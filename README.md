@@ -26,15 +26,16 @@ Palimpsest is *not* a diff tool (marking what changed is explicit), *not* a temp
 - **Reviewers, editor, and co-authors, all colored and tracked.** `<r1-2>` (reviewer 1, comment 2), `<e1>` (editor), or `<bob-3>` (co-author) — each anchor kind gets its own color and its own letter section, automatically.
 - **Figure/table/equation/heading numbering that survives tracking.** A deleted element keeps its own real number, struck through, instead of leaking a shifted one onto everything after it — the tracked manuscript and the clean one always agree on "Figure 3" (or "2.1", for a section).
 - **A built-in checklist.** `change-list()` renders a table of every marked passage (comment, type of change, page, section) in the tracked manuscript — tick it off against the response letter.
-- **Diagnostics.** Orphan comments, duplicate exchanges, unanswered anchors, empty responses — flagged visibly in the tracked manuscript, or turned into hard compile errors with `strict: true` so a broken bundle can't slip through unnoticed.
+- **Diagnostics.** Orphan comments, duplicate exchanges, unanswered anchors, empty responses — flagged visibly in the tracked manuscript, or turned into hard compile errors with `contexture.bundle(strict: true, ...)` so a broken bundle can't slip through unnoticed.
 - **Works with any journal template.** `template:` accepts any `content -> content` function — swap in your actual Typst Universe template, palimpsest asks nothing more of it.
 
 ## Installation
 
-Import the package from the Typst Universe:
+Import the package, plus `contexture` — the small, package-agnostic dependency that actually assembles the bundle compile (palimpsest itself never calls Typst's own `document(...)`):
 
 ```typ
 #import "@preview/palimpsest:0.1.0": *
+#import "@preview/contexture:0.1.0": bundle
 ```
 
 Requires **Typst 0.15** or later, specifically its `--features bundle` export (still experimental — Typst prints a warning about this on every compile, which is expected).
@@ -74,14 +75,15 @@ main.typ          the pilot (a handful of lines)
 ]
 ```
 
-`main.typ` — wire the manuscript to your journal's template and the responses to a letter:
+`main.typ` — wire the manuscript to your journal's template and the responses to a letter. `letter(...)` only *describes* the response letter; `contexture.bundle` (a small, package-agnostic dependency shared with `@preview/equator`) is the one place that actually assembles the compile — this is also what lets a second package's own satellite (e.g. a reporting-guideline checklist) sit in the same `documents:` list with no conflict:
 
 ```typ
 #import "@preview/palimpsest:0.1.0": *
+#import "@preview/contexture:0.1.0": bundle
 
-#show: revisions.with(
+#show: bundle.with(
   template: my-journal-template.with(title: [...], authors: ("...",)),
-  exchanges: include "responses.typ",
+  documents: (letter(exchanges: include "responses.typ"),),
 )
 
 #include "manuscript.typ"
@@ -91,13 +93,13 @@ Two compiles produce everything:
 
 ```sh
 typst compile --features bundle --format bundle main.typ
-typst compile --features bundle --format bundle --input mode=tracked main.typ
+typst compile --features bundle --format bundle --input variant=tracked main.typ
 ```
 
 | Command | Produces |
 |---|---|
-| First (mode defaults to `clean`) | `manuscript.pdf` — what you submit, no marks visible at all — and `response.pdf`, citing *this* manuscript's own pagination |
-| Second (`--input mode=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged — and `response-tracked.pdf`, the same letter citing *that* manuscript's pagination instead |
+| First (`variant` defaults to `clean`) | `manuscript.pdf` — what you submit, no marks visible at all — and `response.pdf`, citing *this* manuscript's own pagination |
+| Second (`--input variant=tracked`) | `manuscript-tracked.pdf` — every change visible, colored by reviewer, anchor-tagged — and `response-tracked.pdf`, the same letter citing *that* manuscript's pagination instead |
 
 A letter comes out of *both* compiles automatically, as soon as `exchanges:` is set — no separate flag to remember, and a citation always follows whichever mode it's actually compiled under. Take the same marked passage — a replacement and a deletion, both anchored to a reviewer comment — through both compiles.
 
@@ -119,7 +121,7 @@ The second compile shows every change instead: `manuscript-tracked.pdf` keeps bo
   <img src="https://raw.githubusercontent.com/eusebe/typst-palimpsest/0.1.0/docs/manual-snippets/pinpoint-excerpt/response-tracked.png" width="720" alt="The same excerpt in response-tracked.pdf: the tracked wording, struck and underlined, quoted verbatim">
 </p>
 
-Don't want a letter for a particular run — a fast, manuscript-only preview while drafting? `--input letter=false` skips it on either compile, without touching `main.typ`.
+Don't want a letter for a particular run — a fast, manuscript-only preview while drafting? `--input only=` (nothing after the `=`) skips it on either compile, without touching `main.typ` — `contexture.bundle`'s own generic mechanism, shared by any other satellite listed under `documents:` too.
 
 ## A gallery of what's built in
 
@@ -147,7 +149,7 @@ Don't want a letter for a particular run — a fast, manuscript-only preview whi
 - **`xref`/`xcomment`** — `xref(<label>)` cites a manuscript figure/table/equation by its real number *and* page; `xcomment(<anchor>)` links to another comment in the letter itself ("as already discussed in comment R1-2").
 - **`letter-bibliography`** — a second, independently-numbered bibliography for citations the letter makes on its own, alongside the manuscript's normal one.
 - **`pinpoint(mode: "tracked" | "clean")`** — quote the *tracked* wording in an otherwise-clean letter (or vice versa), for "look, we removed exactly what you objected to."
-- **`set-strict(true)`** — turn every diagnostic (orphan comment, duplicate exchange, unanswered anchor, empty response...) into a hard compile error, so nothing gets forgotten right before submission.
+- **`contexture.bundle(strict: true, ...)`** — turn every diagnostic (orphan comment, duplicate exchange, unanswered anchor, empty response...) into a hard compile error, so nothing gets forgotten right before submission — one shared switch, covering any other `contexture`-based package listed alongside `letter(...)` too.
 
 ## Documentation
 

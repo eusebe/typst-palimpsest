@@ -8,7 +8,7 @@
 
 = Test des primitives de marquage
 
-Mode de compilation : #sys.inputs.at("mode", default: "clean")
+Mode de compilation : #sys.inputs.at("variant", default: "clean")
 
 == Cas de base : add / del / rep dans un passage
 

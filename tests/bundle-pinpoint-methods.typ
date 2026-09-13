@@ -3,7 +3,7 @@
 // (comme tests/bundle-exchanges.typ) plutôt qu'avec le pilote
 // revisions(), pour rester concentré sur pinpoint() seul.
 //
-//   typst compile --features bundle --format bundle --root . tests/pinpoint-methods.typ
+//   typst compile --features bundle --format bundle --root .. tests/bundle-pinpoint-methods.typ
 //
 // Objectif : la sortie par défaut de pinpoint() sans excerpt, "(modified
 // on p. X)", pose deux problèmes réels en usage : (1) les parenthèses
@@ -79,6 +79,7 @@
 
 #document("response.pdf")[
   #import "../lib.typ": *
+  #import "../../typst-contexture/lib.typ" as contexture
   #set page(width: 15cm, height: auto, margin: 1.5cm)
   #set text(size: 10pt)
   #set heading(numbering: "1.")
@@ -205,7 +206,7 @@
     }
   }
   #let pinpoint-a(anchor) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     let pages = hits.map(h => h.location().page()).dedup()
     let has-marks = hits.any(h => h.value.marks.len() > 0)
     format-pages-aware(pages, has-marks)
@@ -243,7 +244,7 @@
     }
   }
   #let pinpoint-b1(anchor) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     let pages = hits.map(h => h.location().page()).dedup()
     format-pages-noparens(pages)
   }
@@ -280,7 +281,7 @@
     }
   }
   #let pinpoint-b2(anchor) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     let pages = hits.map(h => h.location().page()).dedup()
     format-pages-bare(pages)
   }
@@ -332,7 +333,7 @@
   parenthétique ou bare. Testé ensemble :
 
   #let pinpoint-c(anchor, bare: false) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     let pages = hits.map(h => h.location().page()).dedup()
     let has-marks = hits.any(h => h.value.marks.len() > 0)
     if bare {
@@ -506,7 +507,7 @@
     if parens { [(#core)] } else { core }
   }
   #let pinpoint-v2(anchor, excerpt: false, parens: true, verb: auto, show-page: true, format: auto) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     if not excerpt {
       let pages = hits.map(h => h.location().page()).dedup()
       let has-marks = hits.any(h => h.value.marks.len() > 0)
@@ -724,7 +725,7 @@
     excerpt-is-textual(v.raw-body) and marks-ok
   }
   #let pinpoint-quote(anchor) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     hits.map(h => {
       let v = h.value
       if v.summary != none {
@@ -756,7 +757,7 @@
   #case([Q.3], [extrait contenant une figure, guillemets forcés (`quotes: true`) --- pour vérifier le problème avant de le corriger])[
     #result[
       #context {
-        let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(<r1-6>))
+        let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(<r1-6>))
         quote(block: true, quotes: true, attribution: [p. #hits.first().location().page()])[#hits.first().value.raw-body]
       }
     ]
@@ -850,7 +851,7 @@
 
   ```typ
   #let pinpoint-final(anchor, show-page: true, quotes: false) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     hits.map(h => {
       let v = h.value
       if v.summary != none {
@@ -864,7 +865,7 @@
   ```
 
   #let pinpoint-final(anchor, show-page: true, quotes: false) = context {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.anchors.contains(anchor))
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.anchors.contains(anchor))
     hits.map(h => {
       let v = h.value
       if v.summary != none {

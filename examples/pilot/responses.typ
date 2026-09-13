@@ -41,4 +41,4 @@
 
 For reference, the propensity score figure is #xref(<fig-positivity>).
 
-#letter-bibliography("/examples/pilot/responses.bib")
+#letter-bibliography("/typst-palimpsest/examples/pilot/responses.bib")

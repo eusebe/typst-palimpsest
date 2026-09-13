@@ -12,10 +12,11 @@
 #   "plain" file (passage/add/del/... directly, no bundle) -> compiled
 #   straight to <name>/result-clean.png and <name>/result-tracked.png.
 # - A snippet with `#document("foo.ext", ...)` call(s), or one using
-#   the real `revisions()`/`revisions.with(...)` pilot (which calls
-#   `document(...)` internally, so it needs the same bundle flags even
-#   though the snippet's own source never spells out `#document(`), is
-#   a bundle -> each named output gets a `-clean`/`-tracked` suffix:
+#   the real `contexture.bundle`/`contexture.bundle.with(...)` pilot
+#   (which calls `document(...)` internally, so it needs the same bundle
+#   flags even though the snippet's own source never spells out
+#   `#document(`), is a bundle -> each named output gets a
+#   `-clean`/`-tracked` suffix:
 #   <name>/foo-clean.ext, <name>/foo-tracked.ext. (A snippet only
 #   interesting in one mode still produces both; the manual just
 #   doesn't have to embed the uninteresting one.)
@@ -65,11 +66,11 @@ for src in docs/manual-snippets/*.typ; do
     rm -rf "$outdir"
     mkdir -p "$outdir"
 
-    if grep -qE '#document\(|revisions\.with\(|show: *revisions\b' "$src"; then
+    if grep -qE '#document\(|bundle\.with\(|show: *(contexture\.)?bundle\b' "$src"; then
         tmp_clean="$(mktemp -d)"
         tmp_tracked="$(mktemp -d)"
-        typst compile --features bundle --format bundle --ppi 300 --root . "$src" "$tmp_clean"
-        typst compile --features bundle --format bundle --ppi 300 --root . --input mode=tracked "$src" "$tmp_tracked"
+        typst compile --features bundle --format bundle --ppi 300 --root .. "$src" "$tmp_clean"
+        typst compile --features bundle --format bundle --ppi 300 --root .. --input variant=tracked "$src" "$tmp_tracked"
         for f in "$tmp_clean"/*; do
             base="$(basename "$f")"
             stem="${base%.*}"
@@ -90,8 +91,8 @@ for src in docs/manual-snippets/*.typ; do
         done
         rm -rf "$tmp_clean" "$tmp_tracked"
     else
-        typst compile --ppi 300 --root . "$src" "$outdir/result-clean.png"
-        typst compile --ppi 300 --root . --input mode=tracked "$src" "$outdir/result-tracked.png"
+        typst compile --ppi 300 --root .. "$src" "$outdir/result-clean.png"
+        typst compile --ppi 300 --root .. --input variant=tracked "$src" "$outdir/result-tracked.png"
     fi
     echo "  $name -> $outdir/"
 done
@@ -99,7 +100,7 @@ done
 echo "Snippets regenerated. Compiling manual(s)..."
 for manual in docs/manual*.typ; do
     [ -f "$manual" ] || continue
-    typst compile --root . "$manual"
+    typst compile --root .. "$manual"
     echo "  $manual"
 done
 

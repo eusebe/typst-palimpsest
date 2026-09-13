@@ -1,4 +1,5 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 #import "@preview/unequivocal-ams:0.1.2": ams-article, theorem, proof
 
 // A lightweight letter template echoing the manuscript's own typeface,
@@ -16,7 +17,7 @@
   body
 }
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: ams-article.with(
     title: [Association between fridge opening frequency and probability
     of finding something new inside],
@@ -52,8 +53,7 @@
     ],
     bibliography: bibliography("manuscript.bib"),
   ),
-  exchanges: include "responses.typ",
-  letter-template: letter-template,
+  documents: (letter(exchanges: include "responses.typ", template: letter-template),),
 )
 
 #include "manuscript.typ"

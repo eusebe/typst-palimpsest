@@ -1,11 +1,30 @@
 #import "utils.typ": collect-metadata, normalize-anchors, current-passage-anchors, render-mode-override, in-excerpt, strip-labels, parse-anchor, numbered-kinds-in
 #import "style.typ": style-state, anchors-color, neutral-color, del-color
-#import "diagnostics.typ": diagnose
+#import "../../typst-contexture/lib.typ" as contexture
 
-/// Always the real compile mode — for the author's own mode-dependent
-/// content. Never influenced by `pinpoint`'s local override (see
-/// `effective-mode`, which is what `add`/`del`/`rep` use internally).
-#let mode() = sys.inputs.at("mode", default: "clean")
+#let diagnose = contexture.diagnose
+
+/// Always the real compile variant — for the author's own
+/// variant-dependent content. Never influenced by `pinpoint`'s local
+/// override (see `effective-mode`, which is what `add`/`del`/`rep` use
+/// internally). Translates `contexture.variant()`'s neutral, cross-package
+/// sentinel `"plain"` back to palimpsest's own historical `"clean"` right
+/// here, in this one function, so every other comparison in this package
+/// (below, `change-list.typ`, `pinpoint.typ`'s own `mode:` override
+/// vocabulary, every test) can keep comparing against `"clean"`
+/// unchanged — `contexture` renamed its own default sentinel away from
+/// `"clean"` specifically because that word was palimpsest's vocabulary,
+/// not a neutral one (see MULTI-DOCUMENT-BUNDLE-DESIGN.md); this
+/// translation is what lets palimpsest keep presenting "clean"/"tracked"
+/// to its own users and its own code without that rename rippling
+/// through the whole package. Any *other* value `contexture.variant()`
+/// might return (a hypothetical third package's own variant, requested
+/// on the same compile) passes through unchanged, since palimpsest has
+/// no opinion on what that means.
+#let mode() = {
+  let v = contexture.variant()
+  if v == "plain" { "clean" } else { v }
+}
 
 /// What `add`/`del`/`rep` actually render by, read via `context`:
 /// `render-mode-override` when `pinpoint(excerpt: true, mode: ...)` has
@@ -226,13 +245,12 @@
   let marks = collect-metadata(body, "palimpsest-mark")
 
   current-passage-anchors.update(anchor-list)
-  [#metadata((
-    tag: "palimpsest-passage",
+  contexture.anchor("palimpsest-passage", (
     anchors: anchor-list,
     summary: summary,
     marks: marks,
     raw-body: body,
-  )) <palimpsest-passage>]
+  ))
 
   if marks.len() == 0 and summary == none and not allow-empty {
     let where = if anchor-list.len() > 0 { " " + anchor-list.map(str).join(", ") } else { "" }
@@ -253,7 +271,7 @@
       // response document.
       let bare = p != none and p.num == none
       if not bare and sty.require-exchange {
-        let matches = query(<palimpsest-exchange>).any(el => el.value.anchor == a)
+        let matches = contexture.anchors("palimpsest-exchange").any(el => el.value.anchor == a)
         if not matches {
           diagnose("anchor " + str(a) + ": no matching exchange")
         }

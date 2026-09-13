@@ -1,9 +1,10 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 
 // Stand-in for a real Universe template — swap this for your journal's
 // actual template (arkheion, a two-column class, etc.). The only
-// contract `revisions` needs from `template:` is `content -> content`,
-// same as anything used with `#show:`.
+// contract `contexture.bundle` needs from `template:` is
+// `content -> content`, same as anything used with `#show:`.
 #let my-template(title: none, authors: (), body) = {
   set page(width: 14cm, height: auto, margin: 1.5cm)
   set text(size: 10pt)
@@ -15,13 +16,12 @@
   body
 }
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: my-template.with(
     title: [Emulating a target trial of early vasopressors],
     authors: ((name: "D. H.", affiliation: "Sorbonne Université"),),
   ),
-  exchanges: include "responses.typ",
-  round: 1,
+  documents: (letter(exchanges: include "responses.typ", round: 1),),
 )
 
 #include "manuscript.typ"

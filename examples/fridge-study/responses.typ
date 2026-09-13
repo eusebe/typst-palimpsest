@@ -272,4 +272,4 @@ reviewers led directly to a manuscript change, consistent with our own
 prior finding that fridge-checking behavior is, if nothing else, a
 reliable trigger for further action #cite(<snackwell2020>, form: "prose").
 
-#letter-bibliography("/examples/fridge-study/responses.bib")
+#letter-bibliography("/typst-palimpsest/examples/fridge-study/responses.bib")

@@ -263,4 +263,4 @@ reviewers led directly to a manuscript change, consistent with our own
 prior finding that inbox behavior is, if nothing else, a reliable
 trigger for further action #cite(<replyall2020>, form: "prose").
 
-#letter-bibliography("/examples/emoji-email/responses.bib")
+#letter-bibliography("/typst-palimpsest/examples/emoji-email/responses.bib")

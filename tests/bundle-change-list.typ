@@ -18,9 +18,9 @@
 //   correctly even though "Background" is a level-2 subsection in between.
 //
 // Compile twice to check both halves of the mode-gating:
-//   typst compile --features bundle --format bundle --root . tests/bundle-change-list.typ
+//   typst compile --features bundle --format bundle --root .. tests/bundle-change-list.typ
 //     -> change-list renders nothing (clean mode).
-//   typst compile --features bundle --format bundle --root . --input mode=tracked tests/bundle-change-list.typ
+//   typst compile --features bundle --format bundle --root .. --input variant=tracked tests/bundle-change-list.typ
 //     -> change-list renders the table, sorted R1-1, R1-2, R1-2, R2-1,
 //        R1-5/R2-2, R3-1, R1-3, R1-4, E1, then the anchor-less row.
 

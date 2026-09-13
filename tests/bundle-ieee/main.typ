@@ -1,7 +1,8 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 #import "@preview/charged-ieee:0.1.4": ieee
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: ieee.with(
     title: [Emulating a Target Trial of Early Treatment Initiation: A Propensity Score Analysis],
     abstract: [
@@ -24,8 +25,7 @@
     bibliography: bibliography("manuscript.bib"),
     figure-supplement: [Fig.],
   ),
-  exchanges: include "responses.typ",
-  round: 1,
+  documents: (letter(exchanges: include "responses.typ", round: 1),),
 )
 
 #include "manuscript.typ"

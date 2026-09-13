@@ -1,4 +1,5 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 
 #let my-template(title: none, authors: (), body) = {
   set page(width: 16.6cm, height: auto, margin: 12pt)
@@ -15,10 +16,9 @@
   default-letter-template(body)
 }
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: my-template.with(title: [A Minimal Study]),
-  letter-template: my-letter-template,
-  exchanges: include "shared/responses.typ",
+  documents: (letter(exchanges: include "shared/responses.typ", template: my-letter-template),),
 )
 
 #include "shared/manuscript.typ"

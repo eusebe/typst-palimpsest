@@ -196,4 +196,4 @@ with a smaller number addressed by clarification alone
 methodological context). We also note the sensitivity-analysis literature
 more broadly #cite(<jones2021>, form: "prose").
 
-#letter-bibliography("/tests/bundle-ieee/responses.bib")
+#letter-bibliography("/typst-palimpsest/tests/bundle-ieee/responses.bib")

@@ -2,20 +2,21 @@
 echo "🚀 Compiling Typst Palimpsest..."
 cd "$(dirname "$0")"
 
-# Root is this directory itself: lib.typ, tests/, docs/, examples/ all
-# live under it, and every root-relative path used by the package
-# (letter-bibliography, ...) is written relative to it. `--root ..`
-# would put the sandbox one level too high and break those paths —
-# verified directly, see CLAUDE.md.
+# Root is the parent "typst templates" directory, not this one: this
+# package now imports ../typst-contexture/lib.typ (a sibling package,
+# unpublished for now) directly, so the sandbox has to cover both
+# directories — see CLAUDE.md, "Migration vers contexture". Every
+# root-relative path used by the package (letter-bibliography, ...) is
+# written as "/typst-palimpsest/..." accordingly, not bare "/...".
 
 # Docs
 for file in docs/*.typ; do
-    [ -f "$file" ] && typst compile --root . "$file"
+    [ -f "$file" ] && typst compile --root .. "$file"
 done
 
 # Examples (single-file, e.g. examples/foo.typ)
 for file in examples/*.typ; do
-    [ -f "$file" ] && typst compile --root . "$file"
+    [ -f "$file" ] && typst compile --root .. "$file"
 done
 
 # Examples requiring the bundle export (a subdirectory with its own
@@ -29,8 +30,8 @@ done
 for dir in examples/*/; do
     file="${dir}main.typ"
     if [ -f "$file" ]; then
-        typst compile --features bundle --format bundle --root . "$file"
-        typst compile --features bundle --format bundle --root . --input mode=tracked "$file"
+        typst compile --features bundle --format bundle --root .. "$file"
+        typst compile --features bundle --format bundle --root .. --input variant=tracked "$file"
     fi
 done
 
@@ -46,8 +47,8 @@ for dir in examples/*/; do
     file="${dir}manuscript.typ"
     mainfile="${dir}main.typ"
     if [ -f "$file" ] && [ ! -f "$mainfile" ]; then
-        typst compile --root . "$file" "${dir}manuscript.pdf"
-        typst compile --root . --input mode=tracked "$file" "${dir}manuscript-tracked.pdf"
+        typst compile --root .. "$file" "${dir}manuscript.pdf"
+        typst compile --root .. --input variant=tracked "$file" "${dir}manuscript-tracked.pdf"
     fi
 done
 
@@ -56,12 +57,12 @@ for file in tests/*.typ; do
     case "$file" in
         tests/bundle-*.typ) continue ;;
     esac
-    [ -f "$file" ] && typst compile --root . "$file"
+    [ -f "$file" ] && typst compile --root .. "$file"
 done
 
 # Tests requiring the bundle export (single-file, e.g. tests/bundle-foo.typ)
 for file in tests/bundle-*.typ; do
-    [ -f "$file" ] && typst compile --features bundle --format bundle --root . "$file"
+    [ -f "$file" ] && typst compile --features bundle --format bundle --root .. "$file"
 done
 
 # Tests requiring the bundle export (a subdirectory with its own main.typ,
@@ -71,7 +72,7 @@ done
 for dir in tests/bundle-*/; do
     file="${dir}main.typ"
     if [ -f "$file" ]; then
-        typst compile --features bundle --format bundle --root . "$file"
-        typst compile --features bundle --format bundle --root . --input mode=tracked "$file"
+        typst compile --features bundle --format bundle --root .. "$file"
+        typst compile --features bundle --format bundle --root .. --input variant=tracked "$file"
     fi
 done

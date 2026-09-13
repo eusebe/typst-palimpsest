@@ -1,5 +1,6 @@
 #import "marks.typ": mode
 #import "utils.typ": parse-anchor
+#import "../../typst-contexture/lib.typ" as contexture
 
 /// English label for each mark kind (§6decies: package-generated text is
 /// fixed English, not configurable). A passage mixing several kinds (e.g.
@@ -73,7 +74,7 @@
   if mode() == "clean" {
     none
   } else {
-    let hits = query(<palimpsest-passage>).filter(el => el.value.marks.len() > 0)
+    let hits = contexture.anchors("palimpsest-passage").filter(el => el.value.marks.len() > 0)
     let rows = hits.map(h => {
       let v = h.value
       let kinds = v.marks.map(m => m.kind).dedup()

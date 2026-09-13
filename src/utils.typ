@@ -1,33 +1,17 @@
-/// Recursively collects the `.value` of every `metadata` element in `body`
-/// whose value is a dictionary tagged with `tag`, in document order.
-/// Purely structural (no layout, no context) — walks the content tree as
-/// data, the same way typst-navigator's `extract-text` does.
-///
-/// Walks *every* content- or array-valued field of each element, not just
-/// `body`/`children` — a mark nested in a `figure`'s `caption:` or a
-/// table's cells lives in a field the shortlist would have missed.
-#let collect-metadata(body, tag) = {
-  let walk(node) = {
-    let t = type(node)
-    if t == content {
-      if node.func() == metadata {
-        let v = node.value
-        if type(v) == dictionary and v.at("tag", default: none) == tag {
-          return (v,)
-        }
-        return ()
-      }
-      return node.fields().values().map(v => {
-        let t2 = type(v)
-        if t2 == content or t2 == array { walk(v) } else { () }
-      }).sum(default: ())
-    } else if t == array {
-      return node.map(walk).sum(default: ())
-    }
-    return ()
-  }
-  walk(body)
-}
+#import "../../typst-contexture/lib.typ" as contexture
+
+// `collect-metadata`, `is-blank`, `collect-labels`, `strip-labels` and
+// `is-textual` used to be defined here — 100% generic structural
+// walkers, no coupling to revision semantics, now shared with equator
+// (and any future package) via `contexture` instead of duplicated. Kept
+// as plain re-exports so every other file in this package that already
+// does `#import "utils.typ": is-blank` (etc.) doesn't need to change its
+// import line at all — see MULTI-DOCUMENT-BUNDLE-DESIGN.md.
+#let collect-metadata = contexture.collect-metadata
+#let is-blank = contexture.is-blank
+#let collect-labels = contexture.collect-labels
+#let strip-labels = contexture.strip-labels
+#let is-textual = contexture.is-textual
 
 /// Normalizes the `anchors` argument accepted by `passage` and its
 /// shortcuts: `none`, a single label, or an array of labels — always
@@ -89,84 +73,34 @@
   none
 }
 
-/// True if `body` contains no non-whitespace text anywhere in its tree —
-/// used to catch an `exchange` written with a comment but an empty
-/// response (§11: "exchange r3-1: empty response").
-#let is-blank(body) = {
-  let walk(node) = {
-    let t = type(node)
-    if t == content {
-      if node.func() == metadata { return false }
-      if node.has("text") {
-        return node.text.trim() != ""
-      }
-      return node.fields().values().any(v => {
-        let t2 = type(v)
-        if t2 == content or t2 == array { walk(v) } else { false }
-      })
-    } else if t == array {
-      return node.any(walk)
-    }
-    false
-  }
-  not walk(body)
-}
-
-/// Recursively collects every non-`none` `.label` found anywhere in
-/// `body`'s tree (a figure, a heading, an equation — any labelled
-/// element). Used by `pinpoint(excerpt: true)` to detect when
-/// re-emitting a passage's stored content into the letter would plant a
-/// second copy of a label that's meant to be unique in the bundle (a
-/// figure the manuscript also cross-references by that same label,
-/// typically) — Typst treats a duplicate label as a hard compile error,
-/// not a warning, so this has to be checked *before* re-emitting, not
-/// discovered by trying it.
-#let collect-labels(body) = {
-  let walk(node) = {
-    let t = type(node)
-    if t == content {
-      let lbl = node.fields().at("label", default: none)
-      let own = if lbl != none { (lbl,) } else { () }
-      own + node.fields().values().map(v => {
-        let t2 = type(v)
-        if t2 == content or t2 == array { walk(v) } else { () }
-      }).sum(default: ())
-    } else if t == array {
-      node.map(walk).sum(default: ())
-    } else {
-      ()
-    }
-  }
-  walk(body)
-}
-
-/// Walks `body` structurally (same recursion shape as `collect-labels`,
-/// above) to find which numbered element kinds it actually contains —
-/// `heading`, and `figure` broken down by `image`/`table`/`raw` kind
-/// (inferred from the figure's own `body` field, same inference Typst
-/// itself uses and the same one `mark-figure-body` has to redo
-/// explicitly after crossing), plus `math.equation`. Used by
-/// `neutralize-numbering` (`marks.typ`) to snapshot/restore only the
-/// counters a given deletion actually touches, instead of all five
-/// unconditionally on every single deletion — not just an optimization:
-/// verified directly that touching all five regardless of content, with
-/// enough mixed deletions stacked in one document (several headings,
-/// figures, tables, and equations all deleted), makes Typst's layout
-/// solver fail to converge within its default five attempts ("document
-/// did not converge" — reproduced with `tests/bundle-numbering-restore.typ`,
-/// which needed all four kinds deleted together to trigger it; any
-/// three alone converged fine, isolating the cause to the sheer volume
-/// of stacked, unconditional counter reads/writes rather than any one
-/// kind in particular).
+/// Walks `body` structurally (same recursion shape as
+/// `contexture.collect-labels`) to find which numbered element kinds it
+/// actually contains — `heading`, and `figure` broken down by
+/// `image`/`table`/`raw` kind (inferred from the figure's own `body`
+/// field, same inference Typst itself uses and the same one
+/// `mark-figure-body` has to redo explicitly after crossing), plus
+/// `math.equation`. Used by `neutralize-numbering` (`marks.typ`) to
+/// snapshot/restore only the counters a given deletion actually touches,
+/// instead of all five unconditionally on every single deletion — not
+/// just an optimization: verified directly that touching all five
+/// regardless of content, with enough mixed deletions stacked in one
+/// document (several headings, figures, tables, and equations all
+/// deleted), makes Typst's layout solver fail to converge within its
+/// default five attempts ("document did not converge" — reproduced with
+/// `tests/bundle-numbering-restore.typ`, which needed all four kinds
+/// deleted together to trigger it; any three alone converged fine,
+/// isolating the cause to the sheer volume of stacked, unconditional
+/// counter reads/writes rather than any one kind in particular).
 #let no-kinds = (heading: false, image: false, table: false, raw: false, equation: false)
 
 #let numbered-kinds-in(body) = {
   // Typst closures can't mutate a captured variable (verified directly
   // — "variables from outside the function are read-only"), so this
   // combines results by *returning and OR-ing* them, the same shape
-  // `collect-labels` (above) already uses for the same reason, rather
-  // than accumulating into a shared dict from inside `walk` the way an
-  // first draft of this function tried and failed to compile.
+  // `contexture.collect-labels` (above) already uses for the same
+  // reason, rather than accumulating into a shared dict from inside
+  // `walk` the way an first draft of this function tried and failed to
+  // compile.
   let or-kinds = (a, b) => (
     heading: a.heading or b.heading,
     image: a.image or b.image,
@@ -212,164 +146,6 @@
     }
   }
   walk(body)
-}
-
-/// Recursively reconstructs `node` with every label removed —
-/// `pinpoint(excerpt: true)` runs this on a passage's stored content
-/// before re-emitting it into the letter, so a figure/table/equation/
-/// heading the passage adds can be *shown*, not just cited by page,
-/// even though its label is also the target of a real `@ref` elsewhere
-/// in the bundle (§6quinquies/§6septies): the copy in the letter no
-/// longer carries that label, so citing it anywhere still resolves
-/// unambiguously to the one true original in the manuscript (verified
-/// directly, including with an `@ref` sitting inline right next to the
-/// stripped copy).
-///
-/// A `figure`, a labelled block `math.equation`, or a labelled
-/// `heading` that still has its original label at the point this runs
-/// gets one more thing done to it before that label is dropped:
-/// `query(lbl)` finds the true, already-shown manuscript original (the
-/// copy being built right now doesn't exist yet, so this can't resolve
-/// to itself), and its real, resolved number is pinned onto the
-/// reconstructed copy's `numbering:` field as a literal value (`(..) =>
-/// real-number`). A local `numbering:` always wins over whatever `set
-/// figure(numbering: ...)`/`set math.equation(numbering:
-/// ...)`/`set heading(numbering: ...)` is active where the copy is
-/// re-emitted — normally the letter's own independent "R" sequence for
-/// a figure (`with-letter-numbering`, `letter.typ`) — so a figure,
-/// equation, or heading the letter quotes shows the *same* number it
-/// has in the manuscript ("Figure 2"/"Equation 3"/"2.1" in both places)
-/// instead of a letter-local one ("Figure 2" in the manuscript, "Figure
-/// R1" in the letter) that gave no hint the two were the same element.
-/// The three element types need different fields to compute that real
-/// number, which is the only reason they're not handled by one shared
-/// branch: a `figure` synthesizes its own `.counter` once shown (scoped
-/// to its `kind`, so it already reads the right one whatever that kind
-/// is); `math.equation` and `heading` don't synthesize one, so
-/// `counter(math.equation)`/`counter(heading)` — the one, ungrouped
-/// counter every equation shares, and likewise the one counter that
-/// already returns a heading's full "2.1"-style array regardless of
-/// level (verified directly, no per-level split the way `figure` has a
-/// per-`kind` one) — have to be read explicitly instead. Skipped,
-/// falling through to whatever numbering already applies, whenever
-/// there's nothing to pin: no label, the label doesn't resolve anywhere
-/// (a figure/equation/heading the *letter* itself adds, never in the
-/// manuscript at all), or the original's own `numbering` is `none`
-/// (some future case setting it directly — not `del-numbering: "none"`
-/// itself, which since `neutralize-numbering` (`marks.typ`) switched
-/// from blanking numbering to snapshotting/restoring the counter no
-/// longer sets a deleted element's own `numbering` to `none` at all; a
-/// deleted figure/equation/heading keeps its real, resolved numbering
-/// and is pinned just like a kept one — this guard is now mostly
-/// theoretical, kept because `numbering(none, ..)` is still a hard
-/// Typst error if it's ever `none` for any other reason). An *inline*
-/// equation is covered by the same branch as a block one —
-/// `math.equation`'s `.numbering` field and the shared counter work
-/// identically either way — but an inline equation is rarely labelled
-/// or numbered in practice, so this is mostly untested territory. A
-/// `heading` is, in the same sense, rarely labelled at all outside of
-/// this use case — the gain only shows up for a heading the author
-/// specifically labels so it can be quoted with its real section
-/// number; an unlabelled one (the common case) just stays unnumbered in
-/// the letter, as before.
-///
-/// Doesn't change how many counter slots a re-emitted figure consumes
-/// — it still advances whichever kind-scoped counter is active where
-/// it's shown (a real `figure` element always does, however its number
-/// is displayed), same as before this pinning existed. A letter's own,
-/// genuinely new figure appearing after several quoted ones therefore
-/// still gets whatever "R" number that position implies, not a clean
-/// "R1" — already true before this change (an excerpt has always
-/// consumed a slot in the letter's counter, only its *displayed*
-/// number is new), so left as is rather than introducing a separate
-/// counter namespace (`kind:`) to fix a property nobody has asked for.
-///
-/// Reconstructs an element via its own `.func()(..fields)` — works
-/// uniformly across element types (figure, heading, math.equation, all
-/// verified) *except* that a `sequence`'s `children` field is one
-/// positional array argument, not one argument per child (`ctor(c)`,
-/// not `ctor(..c)` — verified: the latter errors "expected array,
-/// found content"); every other field with a content/array value goes
-/// through `..named-fields` uniformly since element constructors accept
-/// their own field names as keyword arguments.
-///
-/// Only reconstructs subtrees that actually contain a label
-/// (`collect-labels(node).len() == 0` bails out immediately) — the vast
-/// majority of any passage's content has no label anywhere in it, and
-/// skipping reconstruction there is both cheaper and safer: rebuilding
-/// content nobody needs to change is pure risk for no benefit. `metadata`
-/// nodes are never reconstructed either — the package's own internal
-/// tag labels (`<palimpsest-mark>` etc., deliberately reused across the
-/// whole bundle) must survive re-emission untouched.
-#let strip-labels(node) = {
-  let t = type(node)
-  if t == content {
-    if node.func() == metadata or collect-labels(node).len() == 0 {
-      return node
-    }
-    let f = node.fields()
-    let new-f = (:)
-    for (k, v) in f {
-      if k == "label" { continue }
-      let t2 = type(v)
-      new-f.insert(k, if t2 == content {
-        strip-labels(v)
-      } else if t2 == array {
-        v.map(x => if type(x) == content { strip-labels(x) } else { x })
-      } else {
-        v
-      })
-    }
-    let ctor = node.func()
-    if ctor == figure or ctor == math.equation or ctor == heading {
-      let lbl = f.at("label", default: none)
-      if lbl != none {
-        let hits = query(lbl)
-        if hits.len() > 0 {
-          let orig = hits.first()
-          if orig.numbering != none {
-            // `figure` synthesizes its own `.counter` once shown, scoped
-            // to its `kind`. `math.equation` and `heading` don't — both
-            // share one, plain, ungrouped counter apiece (`heading`'s
-            // isn't scoped by level either: `counter(heading)` alone
-            // already returns the full "2.1"-style array, verified
-            // directly), so both read the same generic counter directly.
-            let cval = if ctor == figure {
-              orig.counter.at(orig.location())
-            } else if ctor == math.equation {
-              counter(math.equation).at(orig.location())
-            } else {
-              counter(heading).at(orig.location())
-            }
-            let real-number = numbering(orig.numbering, ..cval)
-            new-f.insert("numbering", (..) => real-number)
-          }
-        }
-      }
-    }
-    if "body" in new-f {
-      let b = new-f.remove("body")
-      ctor(b, ..new-f)
-    } else if "children" in new-f {
-      // `children`'s calling convention isn't uniform: `sequence` wants
-      // its array as one positional argument (`ctor(c)` — spreading
-      // errors "expected array, found content"), while `table`, `grid`
-      // and likely others of that family want each child spread as its
-      // own positional argument (`ctor(..c)` — passing the array as one
-      // argument errors "expected content, found array"). Both verified
-      // directly; `repr(ctor)` is the only way found to tell them apart,
-      // since `sequence` itself isn't a nameable value to compare
-      // against directly (`node.func() == sequence` doesn't parse).
-      let c = new-f.remove("children")
-      if repr(ctor) == "sequence" { ctor(c, ..new-f) } else { ctor(..c, ..new-f) }
-    } else {
-      ctor(..new-f)
-    }
-  } else if t == array {
-    node.map(strip-labels)
-  } else {
-    node
-  }
 }
 
 /// Overlays a horizontal line at mid-height across `body`, colored by

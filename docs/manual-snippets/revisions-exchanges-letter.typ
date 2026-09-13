@@ -1,4 +1,5 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 
 #let my-template(body) = {
   set page(width: 16.6cm, height: auto, margin: 12pt)
@@ -18,10 +19,9 @@
   ]
 ]
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: my-template,
-  letter-template: my-letter-template,
-  exchanges: exchanges,
+  documents: (letter(exchanges: exchanges, template: my-letter-template),),
 )
 
 #passage(<r1-1>)[The treatment #rep[has an effect][has a clinically meaningful effect] on survival.]

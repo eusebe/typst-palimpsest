@@ -7,7 +7,7 @@
 
 = Test des marques dans figures et tableaux (spec §13)
 
-Mode de compilation : #sys.inputs.at("mode", default: "clean")
+Mode de compilation : #sys.inputs.at("variant", default: "clean")
 
 == Figure entièrement ajoutée
 

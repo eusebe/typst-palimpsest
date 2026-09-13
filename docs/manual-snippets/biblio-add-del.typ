@@ -10,4 +10,4 @@
   An outdated claim, previously supported by @jones2019.
 ]
 
-#bibliography("/docs/manual-snippets/biblio-manuscript.bib")
+#bibliography("/typst-palimpsest/docs/manual-snippets/biblio-manuscript.bib")

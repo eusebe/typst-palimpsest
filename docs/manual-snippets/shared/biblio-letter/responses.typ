@@ -13,4 +13,4 @@ For the reviewer's convenience only:
   caption: [Sample sizes, not shown in the manuscript.],
 )
 
-#letter-bibliography("/docs/manual-snippets/biblio-letter.bib")
+#letter-bibliography("/typst-palimpsest/docs/manual-snippets/biblio-letter.bib")

@@ -9,9 +9,9 @@
 // `#document(...)`, same pattern as `bundle-exchanges.typ`.
 //
 // Compile twice to check both halves of the mode-gating:
-//   typst compile --features bundle --format bundle --root . tests/bundle-authors.typ
+//   typst compile --features bundle --format bundle --root .. tests/bundle-authors.typ
 //     -> clean: no diagnostics, no visible marks.
-//   typst compile --features bundle --format bundle --root . --input mode=tracked tests/bundle-authors.typ
+//   typst compile --features bundle --format bundle --root .. --input variant=tracked tests/bundle-authors.typ
 //     -> tracked: colors, headers, diagnostics all visible per the cases below.
 
 #import "../lib.typ": *

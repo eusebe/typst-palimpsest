@@ -1,4 +1,5 @@
 #import "../../lib.typ": *
+#import "../../../typst-contexture/lib.typ" as contexture
 #import "@preview/charged-ieee:0.1.4": ieee
 
 // A lightweight letter template, independent of the two-column IEEE
@@ -14,7 +15,7 @@
   body
 }
 
-#show: revisions.with(
+#show: contexture.bundle.with(
   template: ieee.with(
     title: [Estimating the causal effect of replying "👍" versus
     "merci" to professional emails],
@@ -52,8 +53,7 @@
     bibliography: bibliography("manuscript.bib"),
     figure-supplement: [Fig.],
   ),
-  exchanges: include "responses.typ",
-  letter-template: letter-template,
+  documents: (letter(exchanges: include "responses.typ", template: letter-template),),
 )
 
 #include "manuscript.typ"

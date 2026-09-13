@@ -41,4 +41,4 @@
 Pour référence, la figure des scores de propension se trouve
 #xref(<fig-positivity>).
 
-#letter-bibliography("/tests/bundle-pilot/responses.bib")
+#letter-bibliography("/typst-palimpsest/tests/bundle-pilot/responses.bib")
