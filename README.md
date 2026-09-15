@@ -75,7 +75,7 @@ main.typ          the pilot (a handful of lines)
 ]
 ```
 
-`main.typ` — wire the manuscript to your journal's template and the responses to a letter. `letter(...)` only *describes* the response letter; `contexture.bundle` (a small, package-agnostic dependency shared with `@preview/equator`) is the one place that actually assembles the compile — this is also what lets a second package's own satellite (e.g. a reporting-guideline checklist) sit in the same `documents:` list with no conflict:
+`main.typ` — wire the manuscript to your journal's template and the responses to a letter. `letter(...)` only *describes* the response letter; `contexture.bundle` (a small, package-agnostic dependency shared with `@preview/checkitoff`) is the one place that actually assembles the compile — this is also what lets a second package's own satellite (e.g. a reporting-guideline checklist) sit in the same `documents:` list with no conflict:
 
 ```typ
 #import "@preview/palimpsest:0.1.0": *

@@ -2,7 +2,7 @@
 
 // `collect-metadata`, `is-blank`, `collect-labels`, `strip-labels` and
 // `is-textual` used to be defined here — 100% generic structural
-// walkers, no coupling to revision semantics, now shared with equator
+// walkers, no coupling to revision semantics, now shared with checkitoff
 // (and any future package) via `contexture` instead of duplicated. Kept
 // as plain re-exports so every other file in this package that already
 // does `#import "utils.typ": is-blank` (etc.) doesn't need to change its

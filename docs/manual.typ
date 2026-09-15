@@ -52,7 +52,7 @@ Palimpsest automates it. Mark each change where it happens --- `passage(<r2-3>)[
 - *`manuscript-tracked.pdf`* --- the same manuscript with every addition underlined and every deletion struck through, colored by whoever asked for it;
 - *`response.pdf`* --- a letter, written once, that cites the manuscript's real page for every response: `pinpoint(<r2-3>)` becomes "p. 4," correct after every recompile, because the page number comes from the very same compile that just laid the manuscript out.
 
-This only works because all of it comes out of a single Typst compile that can see its own final layout. Palimpsest doesn't implement that part itself: it's built on `contexture`, a small shared package installed alongside it (see the next chapter). You don't need to learn `contexture` to use palimpsest --- everything you need is shown here, one function at a time. The closing chapter, "Palimpsest in the contexture ecosystem," explains what `contexture` actually does and introduces `@preview/equator`, a sibling package for reporting-guideline checklists, for anyone who wants the bigger picture or needs to combine the two.
+This only works because all of it comes out of a single Typst compile that can see its own final layout. Palimpsest doesn't implement that part itself: it's built on `contexture`, a small shared package installed alongside it (see the next chapter). You don't need to learn `contexture` to use palimpsest --- everything you need is shown here, one function at a time. The closing chapter, "Palimpsest in the contexture ecosystem," explains what `contexture` actually does and introduces `@preview/checkitoff`, a sibling package for reporting-guideline checklists, for anyone who wants the bigger picture or needs to combine the two.
 
 = Installation and compiling
 
@@ -650,7 +650,7 @@ Two already appeared earlier, in context: a numbered anchor with #link(<sec-req-
 
 Four more exist but aren't demonstrated live here, since each needs a slightly unusual setup to trigger: two numbered exchanges sharing one anchor (`duplicate exchange r1-2`); `xref`/`xcomment` pointing at a label or anchor that doesn't exist anywhere (`xref(<fig-x>): not found`, `xcomment(<r9-9>): no exchange found for this anchor`); and an excerpt whose passage contains a label also referenced elsewhere in the bundle, which falls back to citing the page instead of crashing the compile outright --- rare in practice, since `pinpoint(excerpt: true)` already strips labels from what it re-emits before this check would even trigger.
 
-`contexture.bundle(strict: true, ...)` --- the bundle's own `strict:` parameter, see #link(<sec-project-layout>)[below] --- turns every one of these into a hard compile error, in both modes, for palimpsest *and* any other package sharing the same bundle (equator's checklist diagnostics included, if one is listed too):
+`contexture.bundle(strict: true, ...)` --- the bundle's own `strict:` parameter, see #link(<sec-project-layout>)[below] --- turns every one of these into a hard compile error, in both modes, for palimpsest *and* any other package sharing the same bundle (checkitoff's checklist diagnostics included, if one is listed too):
 
 #code("#show: contexture.bundle.with(strict: true, ...)")
 
@@ -658,7 +658,7 @@ Not the default, since a manuscript mid-revision should still compile --- meant 
 
 = Wiring a real project <sec-project-layout>
 
-Every example so far ran `add`/`del`/`passage`/`change-list`/... directly, in a single plain file, no bundle. A real project instead wires everything together explicitly, in two parts: `contexture.bundle` --- imported from `@preview/contexture`, palimpsest's own dependency --- is the only function anywhere in this ecosystem that ever calls Typst's own `document(...)`; it owns the manuscript, and builds one more document per entry listed under `documents:`. Palimpsest's own `letter(...)` doesn't build anything by itself --- it just *describes* the response letter as one such entry. That split is what lets a second package add its own document the same way --- equator's reporting-guideline checklist, say --- by adding a second entry to the same list, with no risk of two competing functions each trying to call `document(...)` on their own (the closing chapter, #link(<sec-contexture-equator>)[Palimpsest in the contexture ecosystem], walks through combining the two).
+Every example so far ran `add`/`del`/`passage`/`change-list`/... directly, in a single plain file, no bundle. A real project instead wires everything together explicitly, in two parts: `contexture.bundle` --- imported from `@preview/contexture`, palimpsest's own dependency --- is the only function anywhere in this ecosystem that ever calls Typst's own `document(...)`; it owns the manuscript, and builds one more document per entry listed under `documents:`. Palimpsest's own `letter(...)` doesn't build anything by itself --- it just *describes* the response letter as one such entry. That split is what lets a second package add its own document the same way --- checkitoff's reporting-guideline checklist, say --- by adding a second entry to the same list, with no risk of two competing functions each trying to call `document(...)` on their own (the closing chapter, #link(<sec-contexture-checkitoff>)[Palimpsest in the contexture ecosystem], walks through combining the two).
 
 A project is normally three files:
 
@@ -708,7 +708,7 @@ Each compile produces exactly the file(s) for its own variant, never a mix of th
 `contexture.bundle`'s own parameters (shared by every package built on it, not specific to palimpsest):
 
 / `template`: wraps the manuscript only --- any `content -> content` function, including a real journal template used the normal way. `authors:`/`title:` above are this example's own stand-in template's parameters, not `bundle`'s.
-/ `documents`: an array of satellite descriptions --- `letter(...)` here, possibly alongside others (see #link(<sec-contexture-equator>)[below]). `()`, the default, produces the manuscript alone.
+/ `documents`: an array of satellite descriptions --- `letter(...)` here, possibly alongside others (see #link(<sec-contexture-checkitoff>)[below]). `()`, the default, produces the manuscript alone.
 / `strict`: `bundle(strict: true, ...)` turns every diagnostic raised by *any* listed satellite, and by palimpsest's own marks/exchanges, into a hard compile error --- see #link(<sec-diagnostics>)[Diagnostics and strict mode] above.
 
 `letter(...)`'s own parameters, palimpsest-specific:
@@ -738,7 +738,7 @@ The one thing that *is* a command-line choice, not a fixed property of the proje
 typst compile --features bundle --format bundle --input only= main.typ
 ```
 
-Naming a satellite explicitly (`--input only=response`) restricts the compile to just that one, still subject to its own rules (a satellite gated on something else, like equator's checklist below, doesn't get forced on just because it's named here).
+Naming a satellite explicitly (`--input only=response`) restricts the compile to just that one, still subject to its own rules (a satellite gated on something else, like checkitoff's checklist below, doesn't get forced on just because it's named here).
 
 What each command writes, with `exchanges` set:
 
@@ -762,43 +762,43 @@ Everything in this manual that looks up a *real* page number across two document
 
 - an *anchor* primitive --- mark a spot in one document, read it back from any other, by its real page; `pinpoint` and `xref` are both built directly on it;
 - a *shared compile engine* (`bundle`) --- the single point that ever calls Typst's own `document(...)`, so palimpsest's letter and, say, another package's own generated document can both be listed side by side without competing to own the compile;
-- two independent *compile flags*, `variant` and `preview` --- palimpsest reads `variant` for its own clean/tracked distinction (`--input variant=tracked` throughout this manual); `preview` is a second, independent axis a package can use for its own purposes (equator uses it for its `check()` highlighting, below);
+- two independent *compile flags*, `variant` and `preview` --- palimpsest reads `variant` for its own clean/tracked distinction (`--input variant=tracked` throughout this manual); `preview` is a second, independent axis a package can use for its own purposes (checkitoff uses it for its `check()` highlighting, below);
 - a shared *diagnostics* mechanism and `strict` flag --- what every warning box and `strict: true` in this manual are actually built from.
 
 `passage()`/`add()`/`del()`/`rep()` are built directly on `contexture`'s anchor primitive; `letter(...)` is a thin description handed to its shared compile engine. None of this needs to be learned to use palimpsest as documented above --- it's mentioned here because the same foundation is shared with the package below, which is what makes combining the two straightforward rather than a rewrite.
 
-== `@preview/equator`: reporting-guideline checklists
+== `@preview/checkitoff`: reporting-guideline checklists
 
-`equator` is a sibling package for a different problem: filling in a reporting-guideline grid (CONSORT, PRISMA, SPIRIT, STARD, STROBE...) automatically, by marking where each item is answered in the manuscript (`check(id, body)`) and letting the grid cite the real page each one landed on. See `@preview/equator`'s own manual for the full picture; nothing in it is needed to use palimpsest on its own.
+`checkitoff` is a sibling package for a different problem: filling in a reporting-guideline grid (CONSORT, PRISMA, SPIRIT, STARD, STROBE...) automatically, by marking where each item is answered in the manuscript (`check(id, body)`) and letting the grid cite the real page each one landed on. See `@preview/checkitoff`'s own manual for the full picture; nothing in it is needed to use palimpsest on its own.
 
-== Combining the two <sec-contexture-equator>
+== Combining the two <sec-contexture-checkitoff>
 
-Because `contexture.bundle` --- not palimpsest --- owns `documents:`, adding a second package's own document alongside `letter(...)` is just a second entry in the same array, not a second engine to reconcile. Here, a CONSORT reporting checklist (`@preview/equator`) is produced from the *same* manuscript, in the *same* compile, as the reviewer response letter:
+Because `contexture.bundle` --- not palimpsest --- owns `documents:`, adding a second package's own document alongside `letter(...)` is just a second entry in the same array, not a second engine to reconcile. Here, a CONSORT reporting checklist (`@preview/checkitoff`) is produced from the *same* manuscript, in the *same* compile, as the reviewer response letter:
 
-#code-of("manual-snippets/contexture-with-equator.typ")
+#code-of("manual-snippets/contexture-with-checkitoff.typ")
 
-`manuscript.pdf` --- item 1 is unrelated to the reviewer exchange, so `equator.check(...)` just renders its own text at its own spot, independently of `passage(...)`; item 2's text, though, genuinely *is* the reviewer exchange, so it's rendered exactly once, by `passage(...)` alone (see below for why):
+`manuscript.pdf` --- item 1 is unrelated to the reviewer exchange, so `checkitoff.check(...)` just renders its own text at its own spot, independently of `passage(...)`; item 2's text, though, genuinely *is* the reviewer exchange, so it's rendered exactly once, by `passage(...)` alone (see below for why):
 
-#shot("manual-snippets/contexture-with-equator/manuscript-clean.png")
+#shot("manual-snippets/contexture-with-checkitoff/manuscript-clean.png")
 
 `response.pdf`, citing the manuscript's real page as always:
 
-#shot("manual-snippets/contexture-with-equator/response-clean.png")
+#shot("manual-snippets/contexture-with-checkitoff/response-clean.png")
 
-`checklist.pdf`, generated entirely by equator, citing the same manuscript page for both items regardless of which form of `check()` produced each one:
+`checklist.pdf`, generated entirely by checkitoff, citing the same manuscript page for both items regardless of which form of `check()` produced each one:
 
-#shot("manual-snippets/contexture-with-equator/checklist-clean.png")
+#shot("manual-snippets/contexture-with-checkitoff/checklist-clean.png")
 
-Three documents, one manuscript, one compile --- and `--input variant=tracked`/`--input preview=true` (equator's own preview flag, for its `check()` anchors) both still work exactly as shown throughout this manual, independently of whichever other packages are listed in `documents:`.
+Three documents, one manuscript, one compile --- and `--input variant=tracked`/`--input preview=true` (checkitoff's own preview flag, for its `check()` anchors) both still work exactly as shown throughout this manual, independently of whichever other packages are listed in `documents:`.
 
 *Never nest one package's marking function inside another's* --- `#check(...)[#passage(...)[...]]` and the reverse each break something, for the same underlying reason both times: `passage()`'s own visual rendering, and `check()`'s own preview-mode highlighting, are each wrapped in a `context` block (needed to read live style state) --- and a `context` block is structurally opaque to anything trying to inspect its contents *before* layout, the same limitation this manual already documents for `pinpoint`'s label handling. Nest `passage()` inside `check()` and `check()`'s own blank-content self-check can no longer see the real text inside --- it misreports the passage as empty, in *any* mode, not just under `preview: true`. Nest `check()` inside `passage()` and, under `preview: true` specifically, `passage()`'s own scan for `add`/`del`/`rep` marks can no longer see them --- it misreports "contains no mark". Two different symptoms, one cause, and no nesting order avoids it.
 
-*But don't just call them as two independent, side-by-side renders on the exact same span either* --- both `check(id, body)` and `passage()` render their own `body`; two calls on identical text print it twice, as plain, visible duplication (item 1 above is fine precisely because it's a *different* span from anything palimpsest touches --- the common case, and the one worth defaulting to whenever a checklist item and a reviewer exchange simply don't coincide). When they do coincide --- the reviewer's requested change *is* the manuscript's answer to a checklist item, item 2 above --- use the bare `check(id)` (no second argument) instead of `check(id, body)`: same metadata, same page resolution in `checklist.pdf`, but it renders nothing but a small superscripted id under `--input preview=true` --- nothing that duplicates or nests. `passage(...)` stays the one call that actually prints the text and handles its tracked-mode marks; `check(id)` just tells equator where to find it.
+*But don't just call them as two independent, side-by-side renders on the exact same span either* --- both `check(id, body)` and `passage()` render their own `body`; two calls on identical text print it twice, as plain, visible duplication (item 1 above is fine precisely because it's a *different* span from anything palimpsest touches --- the common case, and the one worth defaulting to whenever a checklist item and a reviewer exchange simply don't coincide). When they do coincide --- the reviewer's requested change *is* the manuscript's answer to a checklist item, item 2 above --- use the bare `check(id)` (no second argument) instead of `check(id, body)`: same metadata, same page resolution in `checklist.pdf`, but it renders nothing but a small superscripted id under `--input preview=true` --- nothing that duplicates or nests. `passage(...)` stays the one call that actually prints the text and handles its tracked-mode marks; `check(id)` just tells checkitoff where to find it.
 
-Not a palimpsest-specific rule: it applies to any two `contexture`-based packages whose marking functions both render content over the same span, present or future --- the fix is the same shape every time, one call renders, any other call that needs to know about that same span registers via its own package's bare, non-rendering form instead of its normal marking call (equator's own `check` folds both shapes into one function, the same way palimpsest's own `passage(anchors, body)`/`passage(body)` already does).
+Not a palimpsest-specific rule: it applies to any two `contexture`-based packages whose marking functions both render content over the same span, present or future --- the fix is the same shape every time, one call renders, any other call that needs to know about that same span registers via its own package's bare, non-rendering form instead of its normal marking call (checkitoff's own `check` folds both shapes into one function, the same way palimpsest's own `passage(anchors, body)`/`passage(body)` already does).
 
 == Where to go next
 
 - The mechanics behind all of this, on their own, with no notion of revisions or checklists attached: `@preview/contexture`'s manual.
-- Reporting-guideline checklists that cite the real pages: `@preview/equator`'s manual.
+- Reporting-guideline checklists that cite the real pages: `@preview/checkitoff`'s manual.
 - Everything about manuscript revisions and reviewer letters on their own: the rest of this manual, from #link(<sec-quickstart>)[Your first revision round] onward.

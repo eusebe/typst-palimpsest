@@ -1,5 +1,5 @@
 #import "../../lib.typ": *
-#import "../../../typst-equator/lib.typ": *
+#import "../../../typst-checkitoff/lib.typ": *
 #import "../../../typst-contexture/lib.typ": bundle
 
 // A tiny made-up grid, not a real reporting guideline — kept small so the

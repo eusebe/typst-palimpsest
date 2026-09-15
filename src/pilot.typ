@@ -7,11 +7,11 @@
 /// MULTI-DOCUMENT-BUNDLE-DESIGN.md). Palimpsest has no pilot of its own
 /// any more: `contexture.bundle(...)` is the single point that ever
 /// calls `document(...)`, for every package built on it, precisely so
-/// stacking this alongside another package's own satellite (equator's
+/// stacking this alongside another package's own satellite (checkitoff's
 /// `checklist(...)`, say) never runs into two competing pilots each
 /// convinced it alone owns the manuscript/document split — the exact
 /// failure `#show: revisions.with(...)` followed by `#show:
-/// equator.with(...)` used to hit ("constructing a document is only
+/// checkitoff.with(...)` used to hit ("constructing a document is only
 /// supported in the bundle target", since the second pilot's own
 /// `document(...)` ended up nested inside the first's).
 ///
