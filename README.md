@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="readme-assets/logo.svg" width="110" alt="palimpsest logo">
+</p>
+
 # Palimpsest
 
 **Palimpsest** turns one annotated manuscript into everything a peer-review response needs: the clean manuscript, a tracked-changes version showing every edit, and a response letter that cites the manuscript's own real page and figure numbers — automatically, and always in sync.
