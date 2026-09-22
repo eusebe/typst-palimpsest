@@ -157,7 +157,7 @@ Don't want a letter for a particular run — a fast, manuscript-only preview whi
 
 ## Documentation
 
-- [`docs/manual.typ`](docs/manual.typ) (⇒ [pdf](https://github.com/eusebe/typst-palimpsest/blob/0.1.0/docs/manual.pdf)) — the full user manual, one function (and every one of its options) at a time, with a real compiled screenshot for each. Compile it yourself, or read the pdf directly.
+- [The palimpsest guide](https://eusebe.github.io/typst-contexture-site/palimpsest/) — the full user guide, one function (and every one of its options) at a time, with a real compiled screenshot for each.
 
 ## Examples
 
